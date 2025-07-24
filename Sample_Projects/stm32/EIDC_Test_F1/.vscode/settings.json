@@ -1,0 +1,8 @@
+{
+    "C_Cpp.errorSquiggles": "enabled",
+    "files.associations": {
+        "atk_md0350_font.h": "c",
+        "stm32f1xx.h": "c",
+        "hwt101ct_sdk.h": "c"
+    }
+}
