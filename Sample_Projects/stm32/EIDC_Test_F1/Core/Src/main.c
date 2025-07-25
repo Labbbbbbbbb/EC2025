@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -26,6 +27,7 @@
 /* USER CODE BEGIN Includes */
 #include "HWT101CT_sdk.h"
 #include "io_retargetToUart.h"
+#include "oled.h"
 
 /* USER CODE END Includes */
 
@@ -93,10 +95,13 @@ int main(void)
   MX_TIM1_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
   __HAL_UART_ENABLE_IT(&huart1,UART_IT_RXNE);
   HAL_UART_Receive_IT(&huart1,&s,1); 
   HW101_Init();
+  SPI_PIN_Init();
+  OLED_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -108,6 +113,13 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    OLED_Refresh();
+    uint8_t speed_[]="Speed:";
+    OLED_ShowString(0,0,speed_, 16);
+    OLED_ShowNum(75,0,(uint32_t)(250),1,16);
+    OLED_ShowChar(90,0,'.',16);
+    OLED_ShowNum(100,0,(uint32_t)((2)*100),3,16);
+    OLED_Refresh();
     printf("fangle:%f,%f,%f\n",fAngle[2], fAcc[2], fGyro[2]);
   }
   /* USER CODE END 3 */
