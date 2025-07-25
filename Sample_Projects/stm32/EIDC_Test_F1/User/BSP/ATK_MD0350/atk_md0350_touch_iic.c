@@ -9,7 +9,7 @@
  ****************************************************************************************************
  * @attention
  *
- * 实验平台:正点原子 M100Z-M3最小系统板STM32F103版
+ * 实验平台:正点原子 STM32F103开发板
  * 在线视频:www.yuanzige.com
  * 技术论坛:www.openedv.com
  * 公司网址:www.alientek.com
@@ -18,8 +18,8 @@
  ****************************************************************************************************
  */
 
-#include "./BSP/ATK_MD0350/atk_md0350_touch_iic.h"
-#include "./SYSTEM/delay/delay.h"
+#include "atk_md0350_touch_iic.h"
+#include "bsp_delay.h"
 
 #if (ATK_MD0350_USING_TOUCH != 0)
 

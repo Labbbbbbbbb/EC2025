@@ -1,19 +1,19 @@
 /**
  ****************************************************************************************************
  * @file        atk_md0350_touch.h
- * @author      ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½Å¶ï¿½(ALIENTEK)
+ * @author      ÕýµãÔ­×ÓÍÅ¶Ó(ALIENTEK)
  * @version     V1.0
  * @date        2022-06-21
- * @brief       ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @license     Copyright (c) 2020-2032, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¿Æ¼ï¿½ï¿½ï¿½ï¿½Þ¹ï¿½Ë¾
+ * @brief       ATK-MD0350Ä£¿é´¥ÃþÇý¶¯´úÂë
+ * @license     Copyright (c) 2020-2032, ¹ãÖÝÊÐÐÇÒíµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾
  ****************************************************************************************************
  * @attention
  *
- * Êµï¿½ï¿½Æ½Ì¨:ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ M100Z-M3ï¿½ï¿½Ð¡ÏµÍ³ï¿½ï¿½STM32F103ï¿½ï¿½
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµ:www.yuanzige.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì³:www.openedv.com
- * ï¿½ï¿½Ë¾ï¿½ï¿½Ö·:www.alientek.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:openedv.taobao.com
+ * ÊµÑéÆ½Ì¨:ÕýµãÔ­×Ó MiniSTM32 V4¿ª·¢°å
+ * ÔÚÏßÊÓÆµ:www.yuanzige.com
+ * ¼¼ÊõÂÛÌ³:www.openedv.com
+ * ¹«Ë¾ÍøÖ·:www.alientek.com
+ * ¹ºÂòµØÖ·:openedv.taobao.com
  *
  ****************************************************************************************************
  */
@@ -25,21 +25,20 @@
 
 #if (ATK_MD0350_USING_TOUCH != 0)
 
-#define ATK_MD0350_TOUCH_READ_TIMES             5   /* ï¿½ï¿½ï¿½åµ¥ï¿½Î»ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½Ä´ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_TOUCH_READ_DISCARD           1   /* ï¿½ï¿½ï¿½åµ¥ï¿½Î»ï¿½È¡ï¿½ï¿½ï¿½ê¶ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_TOUCH_READ_RANGE             50  /* ï¿½ï¿½ï¿½åµ¥ï¿½Î»ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÖµÖ®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ */
+#define ATK_MD0350_TOUCH_READ_TIMES             5   /* ¶¨Òåµ¥´Î»ñÈ¡×ø±ê¶ÁÈ¡µÄ´ÎÊý */
+#define ATK_MD0350_TOUCH_READ_DISCARD           1   /* ¶¨Òåµ¥´Î»ñÈ¡×ø±ê¶ªÆúµÄ×î´ó×îÐ¡ÖµµÄÊýÁ¿ */
+#define ATK_MD0350_TOUCH_READ_RANGE             50  /* ¶¨Òåµ¥´Î»ñÈ¡×ø±ê¶ÁÈ¡µÄÁ½´ÎÖµÖ®¼äÎó²îµÄ×î´óÖµ */
 
-/* ï¿½ï¿½ï¿½Å¶ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_TOUCH_PEN_GPIO_PORT          GPIOB
+/* Òý½Å¶¨Òå */
+#define ATK_MD0350_TOUCH_PEN_GPIO_PORT          GPIOC
 #define ATK_MD0350_TOUCH_PEN_GPIO_PIN           GPIO_PIN_1
-#define ATK_MD0350_TOUCH_PEN_GPIO_CLK_ENABLE()  do{ __HAL_RCC_GPIOB_CLK_ENABLE(); }while(0)
+#define ATK_MD0350_TOUCH_PEN_GPIO_CLK_ENABLE()  do{ __HAL_RCC_GPIOC_CLK_ENABLE(); }while(0)
 
 #define ATK_MD0350_TOUCH_TCS_GPIO_PORT          GPIOC
-#define ATK_MD0350_TOUCH_TCS_GPIO_PIN           GPIO_PIN_5
+#define ATK_MD0350_TOUCH_TCS_GPIO_PIN           GPIO_PIN_13
 #define ATK_MD0350_TOUCH_TCS_GPIO_CLK_ENABLE()  do{ __HAL_RCC_GPIOC_CLK_ENABLE(); }while(0)
-
-/* IOï¿½ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_TOUCH_READ_PEN()             HAL_GPIO_ReadPin(ATK_MD0350_TOUCH_PEN_GPIO_PORT, ATK_MD0350_TOUCH_PEN_GPIO_PIN)
+/* IO²Ù×÷ */
+#define ATK_MD0350_TOUCH_READ_PEN()              HAL_GPIO_ReadPin(ATK_MD0350_TOUCH_PEN_GPIO_PORT, ATK_MD0350_TOUCH_PEN_GPIO_PIN)
 
 #define ATK_MD0350_TOUCH_PEN(x)                 do{ x ?                                                                                                 \
                                                     HAL_GPIO_WritePin(ATK_MD0350_TOUCH_PEN_GPIO_PORT, ATK_MD0350_TOUCH_PEN_GPIO_PIN, GPIO_PIN_SET) :    \
@@ -50,31 +49,28 @@
                                                     HAL_GPIO_WritePin(ATK_MD0350_TOUCH_TCS_GPIO_PORT, ATK_MD0350_TOUCH_TCS_GPIO_PIN, GPIO_PIN_SET) :    \
                                                     HAL_GPIO_WritePin(ATK_MD0350_TOUCH_TCS_GPIO_PORT, ATK_MD0350_TOUCH_TCS_GPIO_PIN, GPIO_PIN_RESET);   \
                                                 }while(0)
-
-/* ATK-MD0350ï¿½ï¿½ï¿½ï¿½IICÍ¨Ñ¶ï¿½ï¿½Ö·Ã¶ï¿½ï¿½ */
+/* ATK-MD0350´¥ÃþIICÍ¨Ñ¶µØÖ·Ã¶¾Ù */
 typedef enum
 {
     ATK_MD0350_TOUCH_IIC_ADDR_14 = 0x14,    /* 0x14 */
     ATK_MD0350_TOUCH_IIC_ADDR_5D = 0x5D,    /* 0x5D */
 } atk_md0350_touch_iic_addr_t;
-
-/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý½á¹¹ */
+/* ´¥Ãþµã×ø±êÊý¾Ý½á¹¹ */
 typedef struct
 {
-    uint16_t x;     /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½ */
-    uint16_t y;     /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Yï¿½ï¿½ï¿½ï¿½ */
-    uint16_t size;  /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡ */
+    uint16_t x;     /* ´¥ÃþµãX×ø±ê */
+    uint16_t y;     /* ´¥ÃþµãY×ø±ê */
+    uint16_t size;  /* ´¥Ãþµã´óÐ¡ */
 } atk_md0350_touch_point_t;
-
-/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_TOUCH_EOK                    0   /* Ã»ï¿½Ð´ï¿½ï¿½ï¿½ */
+/* ´íÎó´úÂë */
+#define ATK_MD0350_TOUCH_EOK                    0   /* Ã»ÓÐ´íÎó */
 #define ATK_MD0350_TOUCH_ERROR                  1
-#define ATK_MD0350_TOUCH_EMPTY                  2   /* ï¿½ï¿½ */
+#define ATK_MD0350_TOUCH_EMPTY                  2   /* ¿Õ */
 
-/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-uint8_t atk_md0350_touch_init(void);                                                /* ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ */
-uint8_t atk_md0350_rtp_touch_scan(uint16_t *x, uint16_t *y);                        /* ATK-MD0350Ä£ï¿½ï¿½ï¿½ï¿½è´¥ï¿½ï¿½É¨ï¿½ï¿½ */
-uint8_t atk_md0350_ctp_touch_scan(atk_md0350_touch_point_t *point, uint8_t cnt);    /* ATK-MD0350Ä£ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½É¨ï¿½ï¿½ */
+/* ²Ù×÷º¯Êý */
+uint8_t atk_md0350_touch_init(void);                                                /* ATK-MD0350Ä£¿é´¥Ãþ³õÊ¼»¯ */
+uint8_t atk_md0350_rtp_touch_scan(uint16_t *x, uint16_t *y);                        /* ATK-MD0350Ä£¿éµç×è´¥ÃþÉ¨Ãè */
+uint8_t atk_md0350_ctp_touch_scan(atk_md0350_touch_point_t *point, uint8_t cnt);    /* ATK-MD0350Ä£¿éµçÈÝ´¥ÃþÉ¨Ãè */
 #endif /* ATK_MD0350_USING_TOUCH */
 
 #endif

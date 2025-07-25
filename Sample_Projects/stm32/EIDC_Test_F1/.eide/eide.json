@@ -25,7 +25,10 @@
   "targets": {
     "Debug": {
       "excludeList": [
-        "User/BSP",
+        "User/SYSTEM/delay",
+        "User/SYSTEM/sys",
+        "User/SYSTEM/usart",
+        "User/BSP/lcd_uart",
         "User/SYSTEM"
       ],
       "toolchain": "GCC",

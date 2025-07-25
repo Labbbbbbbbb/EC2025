@@ -1,23 +1,23 @@
 /**
  ****************************************************************************************************
  * @file        sys.c
- * @author      ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½Å¶ï¿½(ALIENTEK)
+ * @author      ÕýµãÔ­×ÓÍÅ¶Ó(ALIENTEK)
  * @version     V1.0
  * @date        2020-04-17
- * @brief       ÏµÍ³ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½Ð¶Ï¹ï¿½ï¿½ï¿½/GPIOï¿½ï¿½ï¿½Ãµï¿½)
- * @license     Copyright (c) 2020-2032, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¿Æ¼ï¿½ï¿½ï¿½ï¿½Þ¹ï¿½Ë¾
+ * @brief       ÏµÍ³³õÊ¼»¯´úÂë(°üÀ¨Ê±ÖÓÅäÖÃ/ÖÐ¶Ï¹ÜÀí/GPIOÉèÖÃµÈ)
+ * @license     Copyright (c) 2020-2032, ¹ãÖÝÊÐÐÇÒíµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾
  ****************************************************************************************************
  * @attention
  *
- * Êµï¿½ï¿½Æ½Ì¨:ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ M100Z-M3ï¿½ï¿½Ð¡ÏµÍ³ï¿½ï¿½STM32F103ï¿½ï¿½
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµ:www.yuanzige.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì³:www.openedv.com
- * ï¿½ï¿½Ë¾ï¿½ï¿½Ö·:www.alientek.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:openedv.taobao.com
+ * ÊµÑéÆ½Ì¨:ÕýµãÔ­×Ó MiniSTM32 V4¿ª·¢°å
+ * ÔÚÏßÊÓÆµ:www.yuanzige.com
+ * ¼¼ÊõÂÛÌ³:www.openedv.com
+ * ¹«Ë¾ÍøÖ·:www.alientek.com
+ * ¹ºÂòµØÖ·:openedv.taobao.com
  *
- * ï¿½Þ¸ï¿½Ëµï¿½ï¿½
+ * ÐÞ¸ÄËµÃ÷
  * V1.0 20211103
- * ï¿½ï¿½Ò»ï¿½Î·ï¿½ï¿½ï¿½
+ * µÚÒ»´Î·¢²¼
  *
  ****************************************************************************************************
  */
@@ -26,21 +26,21 @@
 
 
 /**
- * @brief       ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ«ï¿½Æµï¿½Ö·
- * @param       baseaddr: ï¿½ï¿½Ö·
- * @param       offset: Æ«ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0, ï¿½ï¿½ï¿½ï¿½0X100ï¿½Ä±ï¿½ï¿½ï¿½)
- * @retval      ï¿½ï¿½
+ * @brief       ÉèÖÃÖÐ¶ÏÏòÁ¿±íÆ«ÒÆµØÖ·
+ * @param       baseaddr: »ùÖ·
+ * @param       offset: Æ«ÒÆÁ¿(±ØÐëÊÇ0, »òÕß0X100µÄ±¶Êý)
+ * @retval      ÎÞ
  */
 void sys_nvic_set_vector_table(uint32_t baseaddr, uint32_t offset)
 {
-    /* ï¿½ï¿½ï¿½ï¿½NVICï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ«ï¿½Æ¼Ä´ï¿½ï¿½ï¿½,VTORï¿½ï¿½9Î»ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½[8:0]ï¿½ï¿½ï¿½ï¿½ */
+    /* ÉèÖÃNVICµÄÏòÁ¿±íÆ«ÒÆ¼Ä´æÆ÷,VTORµÍ9Î»±£Áô,¼´[8:0]±£Áô */
     SCB->VTOR = baseaddr | (offset & (uint32_t)0xFFFFFE00);
 }
 
 /**
- * @brief       Ö´ï¿½ï¿½: WFIÖ¸ï¿½ï¿½(Ö´ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½Í¹ï¿½ï¿½ï¿½×´Ì¬, ï¿½È´ï¿½ï¿½Ð¶Ï»ï¿½ï¿½ï¿½)
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       Ö´ÐÐ: WFIÖ¸Áî(Ö´ÐÐÍê¸ÃÖ¸Áî½øÈëµÍ¹¦ºÄ×´Ì¬, µÈ´ýÖÐ¶Ï»½ÐÑ)
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 void sys_wfi_set(void)
 {
@@ -48,9 +48,9 @@ void sys_wfi_set(void)
 }
 
 /**
- * @brief       ï¿½Ø±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½(ï¿½ï¿½ï¿½Ç²ï¿½ï¿½ï¿½ï¿½ï¿½faultï¿½ï¿½NMIï¿½Ð¶ï¿½)
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ¹Ø±ÕËùÓÐÖÐ¶Ï(µ«ÊÇ²»°üÀ¨faultºÍNMIÖÐ¶Ï)
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 void sys_intx_disable(void)
 {
@@ -58,9 +58,9 @@ void sys_intx_disable(void)
 }
 
 /**
- * @brief       ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ¿ªÆôËùÓÐÖÐ¶Ï
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 void sys_intx_enable(void)
 {
@@ -68,31 +68,31 @@ void sys_intx_enable(void)
 }
 
 /**
- * @brief       ï¿½ï¿½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½Ö·
- * @note        ï¿½ï¿½ï¿½Äºï¿½X, ï¿½ï¿½ï¿½ï¿½MDKï¿½ï¿½, Êµï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½
- * @param       addr: Õ»ï¿½ï¿½ï¿½ï¿½Ö·
- * @retval      ï¿½ï¿½
+ * @brief       ÉèÖÃÕ»¶¥µØÖ·
+ * @note        ×ó²àµÄºìX, ÊôÓÚMDKÎó±¨, Êµ¼ÊÊÇÃ»ÎÊÌâµÄ
+ * @param       addr: Õ»¶¥µØÖ·
+ * @retval      ÎÞ
  */
 void sys_msr_msp(uint32_t addr)
 {
-    __set_MSP(addr);    /* ï¿½ï¿½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½Ö· */
+    __set_MSP(addr);  /* ÉèÖÃÕ»¶¥µØÖ· */
 }
 
 /**
- * @brief       ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ½øÈë´ý»úÄ£Ê½
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 void sys_standby(void)
 {
-    __HAL_RCC_PWR_CLK_ENABLE();    /* Ê¹ï¿½Üµï¿½Ô´Ê±ï¿½ï¿½ */
-    SET_BIT(PWR->CR, PWR_CR_PDDS); /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½ */
+    __HAL_RCC_PWR_CLK_ENABLE();    /* Ê¹ÄÜµçÔ´Ê±ÖÓ */
+    SET_BIT(PWR->CR, PWR_CR_PDDS); /* ½øÈë´ý»úÄ£Ê½ */
 }
 
 /**
- * @brief       ÏµÍ³ï¿½ï¿½ï¿½ï¿½Î»
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ÏµÍ³Èí¸´Î»
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 void sys_soft_reset(void)
 {
@@ -100,41 +100,41 @@ void sys_soft_reset(void)
 }
 
 /**
- * @brief       ÏµÍ³Ê±ï¿½Ó³ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @param       plln: PLLï¿½ï¿½ÆµÏµï¿½ï¿½(PLLï¿½ï¿½Æµ), È¡Öµï¿½ï¿½Î§: 2~16
-                ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Ñ¾ï¿½ï¿½ï¿½SystemInit()ï¿½Ð³ï¿½Ê¼ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ÏµÍ³Ê±ÖÓ³õÊ¼»¯º¯Êý
+ * @param       plln: PLL±¶ÆµÏµÊý(PLL±¶Æµ), È¡Öµ·¶Î§: 2~16
+                ÖÐ¶ÏÏòÁ¿±íÎ»ÖÃÔÚÆô¶¯Ê±ÒÑ¾­ÔÚSystemInit()ÖÐ³õÊ¼»¯
+ * @retval      ÎÞ
  */
 void sys_stm32_clock_init(uint32_t plln)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
-    RCC_OscInitTypeDef rcc_osc_init = {0};
-    RCC_ClkInitTypeDef rcc_clk_init = {0};
+    RCC_OscInitTypeDef rcc_oscinitstructure;
+    RCC_ClkInitTypeDef rcc_clkinitstructure;
 
-    rcc_osc_init.OscillatorType = RCC_OSCILLATORTYPE_HSE;       /* Ñ¡ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½HSE */
-    rcc_osc_init.HSEState = RCC_HSE_ON;                         /* ï¿½ï¿½HSE */
-    rcc_osc_init.HSEPredivValue = RCC_HSE_PREDIV_DIV1;          /* HSEÔ¤ï¿½ï¿½ÆµÏµï¿½ï¿½ */
-    rcc_osc_init.PLL.PLLState = RCC_PLL_ON;                     /* ï¿½ï¿½PLL */
-    rcc_osc_init.PLL.PLLSource = RCC_PLLSOURCE_HSE;             /* PLLÊ±ï¿½ï¿½Ô´Ñ¡ï¿½ï¿½HSE */
-    rcc_osc_init.PLL.PLLMUL = plln;                             /* PLLï¿½ï¿½ÆµÏµï¿½ï¿½ */
-    ret = HAL_RCC_OscConfig(&rcc_osc_init);                     /* ï¿½ï¿½Ê¼ï¿½ï¿½ */
+    rcc_oscinitstructure.OscillatorType = RCC_OSCILLATORTYPE_HSE;       /* Íâ²¿¸ßËÙÊ±ÖÓÊ¹ÄÜHSEON */
+    rcc_oscinitstructure.HSEState = RCC_HSE_ON;                         /* ´ò¿ªHSE */
+    rcc_oscinitstructure.HSEPredivValue = RCC_HSE_PREDIV_DIV1;          /* HSEÔ¤·ÖÆµ */
+    rcc_oscinitstructure.PLL.PLLState = RCC_PLL_ON;                     /* ´ò¿ªPLL */
+    rcc_oscinitstructure.PLL.PLLSource = RCC_PLLSOURCE_HSE;             /* PLLÊ±ÖÓÔ´Ñ¡ÔñHSE */
+    rcc_oscinitstructure.PLL.PLLMUL = plln;                             /* Ö÷PLL±¶ÆµÒò×Ó */
+    ret = HAL_RCC_OscConfig(&rcc_oscinitstructure);                     /* ³õÊ¼»¯ */
 
     if (ret != HAL_OK)
     {
-        while (1);                                              /* Ê±ï¿½Ó³ï¿½Ê¼ï¿½ï¿½Ê§ï¿½Ü£ï¿½Ö®ï¿½ï¿½Ä³ï¿½ï¿½ò½«¿ï¿½ï¿½ï¿½ï¿½Þ·ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½Ð£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½Ä´ï¿½ï¿½ï¿½ */
+        while (1);                                                      /* Ê±ÖÓ³õÊ¼»¯72MÊ§°Ü£¬Ö®ºóµÄ³ÌÐò½«¿ÉÄÜÎÞ·¨Õý³£Ö´ÐÐ£¬¿ÉÒÔÔÚÕâÀï¼ÓÈë×Ô¼ºµÄ´¦Àí */
     }
 
-    /* Ñ¡ï¿½ï¿½PLLï¿½ï¿½ÎªÏµÍ³Ê±ï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½HCLK,PCLK1ï¿½ï¿½PCLK2*/
-    rcc_clk_init.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
-    rcc_clk_init.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;        /* ï¿½ï¿½ï¿½ï¿½ÏµÍ³Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PLL */
-    rcc_clk_init.AHBCLKDivider = RCC_SYSCLK_DIV1;               /* AHBï¿½ï¿½ÆµÏµï¿½ï¿½Îª1 */
-    rcc_clk_init.APB1CLKDivider = RCC_HCLK_DIV2;                /* APB1ï¿½ï¿½ÆµÏµï¿½ï¿½Îª2 */
-    rcc_clk_init.APB2CLKDivider = RCC_HCLK_DIV1;                /* APB2ï¿½ï¿½ÆµÏµï¿½ï¿½Îª1 */
-    ret = HAL_RCC_ClockConfig(&rcc_clk_init, FLASH_LATENCY_2);  /* Í¬Ê±ï¿½ï¿½ï¿½ï¿½FLASHï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Îª2WSï¿½ï¿½Ò²ï¿½ï¿½ï¿½ï¿½3ï¿½ï¿½CPUï¿½ï¿½ï¿½Ú¡ï¿½ */
+    /* Ñ¡ÖÐPLL×÷ÎªÏµÍ³Ê±ÖÓÔ´²¢ÇÒÅäÖÃHCLK,PCLK1ºÍPCLK2 */
+    rcc_clkinitstructure.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+    rcc_clkinitstructure.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;        /* ÉèÖÃÏµÍ³Ê±ÖÓÊ±ÖÓÔ´ÎªPLL */
+    rcc_clkinitstructure.AHBCLKDivider = RCC_SYSCLK_DIV1;               /* AHB·ÖÆµÏµÊýÎª1 */
+    rcc_clkinitstructure.APB1CLKDivider = RCC_HCLK_DIV2;                /* APB1·ÖÆµÏµÊýÎª2 */
+    rcc_clkinitstructure.APB2CLKDivider = RCC_HCLK_DIV1;                /* APB2·ÖÆµÏµÊýÎª1 */
+    ret = HAL_RCC_ClockConfig(&rcc_clkinitstructure, FLASH_LATENCY_2);  /* Í¬Ê±ÉèÖÃFLASHÑÓÊ±ÖÜÆÚÎª2WS£¬Ò²¾ÍÊÇ3¸öCPUÖÜÆÚ */
 
     if (ret != HAL_OK)
     {
-        while (1);                                              /* Ê±ï¿½Ó³ï¿½Ê¼ï¿½ï¿½Ê§ï¿½Ü£ï¿½Ö®ï¿½ï¿½Ä³ï¿½ï¿½ò½«¿ï¿½ï¿½ï¿½ï¿½Þ·ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½Ð£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½Ä´ï¿½ï¿½ï¿½ */
+        while (1);                                                      /* Ê±ÖÓ³õÊ¼»¯72MÊ§°Ü£¬Ö®ºóµÄ³ÌÐò½«¿ÉÄÜÎÞ·¨Õý³£Ö´ÐÐ£¬¿ÉÒÔÔÚÕâÀï¼ÓÈë×Ô¼ºµÄ´¦Àí */
     }
 }
 

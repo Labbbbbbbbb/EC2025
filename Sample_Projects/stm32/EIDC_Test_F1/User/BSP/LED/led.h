@@ -1,49 +1,61 @@
 /**
  ****************************************************************************************************
- * @file        led.h
- * @author      ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½Å¶ï¿½(ALIENTEK)
+ * @file        led.c
+ * @author      ÕýµãÔ­×ÓÍÅ¶Ó(ALIENTEK)
  * @version     V1.0
- * @date        2023-04-23
- * @brief       LEDï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @license     Copyright (c) 2020-2032, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¿Æ¼ï¿½ï¿½ï¿½ï¿½Þ¹ï¿½Ë¾
+ * @date        2020-04-17
+ * @brief       LED Çý¶¯´úÂë
+ * @license     Copyright (c) 2020-2032, ¹ãÖÝÊÐÐÇÒíµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾
  ****************************************************************************************************
  * @attention
- * 
- * Êµï¿½ï¿½Æ½Ì¨:ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ M100Z-M3ï¿½ï¿½Ð¡ÏµÍ³ï¿½ï¿½STM32F103ï¿½ï¿½
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµ:www.yuanzige.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì³:www.openedv.com
- * ï¿½ï¿½Ë¾ï¿½ï¿½Ö·:www.alientek.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:openedv.taobao.com
- * 
+ *
+ * ÊµÑéÆ½Ì¨:ÕýµãÔ­×Ó MiniSTM32 V4¿ª·¢°å
+ * ÔÚÏßÊÓÆµ:www.yuanzige.com
+ * ¼¼ÊõÂÛÌ³:www.openedv.com
+ * ¹«Ë¾ÍøÖ·:www.alientek.com
+ * ¹ºÂòµØÖ·:openedv.taobao.com
+ *
+ * ÐÞ¸ÄËµÃ÷
+ * V1.0 20200417
+ * µÚÒ»´Î·¢²¼
+ *
  ****************************************************************************************************
  */
 
-#ifndef __LED_H
-#define __LED_H
+#ifndef _LED_H
+#define _LED_H
+#include "stm32f1xx.h"
 
-#include "sys.h"
 
-/* ï¿½ï¿½ï¿½Å¶ï¿½ï¿½ï¿½ */
-#define LED0_GPIO_PORT          GPIOE
-#define LED0_GPIO_PIN           GPIO_PIN_5
-#define LED0_GPIO_CLK_ENABLE()  do { __HAL_RCC_GPIOE_CLK_ENABLE(); } while (0)
-#define LED1_GPIO_PORT          GPIOE
-#define LED1_GPIO_PIN           GPIO_PIN_6
-#define LED1_GPIO_CLK_ENABLE()  do { __HAL_RCC_GPIOE_CLK_ENABLE(); } while (0)
+/******************************************************************************************/
+/* Òý½Å ¶¨Òå */
 
-/* IOï¿½ï¿½ï¿½ï¿½ */
-#define LED0(x)                 do { (x) ?                                                              \
-                                    HAL_GPIO_WritePin(LED0_GPIO_PORT, LED0_GPIO_PIN, GPIO_PIN_SET):     \
-                                    HAL_GPIO_WritePin(LED0_GPIO_PORT, LED0_GPIO_PIN, GPIO_PIN_RESET);   \
-                                } while (0)
-#define LED1(x)                 do { (x) ?                                                              \
-                                    HAL_GPIO_WritePin(LED1_GPIO_PORT, LED1_GPIO_PIN, GPIO_PIN_SET):     \
-                                    HAL_GPIO_WritePin(LED1_GPIO_PORT, LED1_GPIO_PIN, GPIO_PIN_RESET);   \
-                                } while (0)
-#define LED0_TOGGLE()           do { HAL_GPIO_TogglePin(LED0_GPIO_PORT, LED0_GPIO_PIN); } while (0)
-#define LED1_TOGGLE()           do { HAL_GPIO_TogglePin(LED1_GPIO_PORT, LED1_GPIO_PIN); } while (0)
+#define LED0_GPIO_PORT                  GPIOA
+#define LED0_GPIO_PIN                   GPIO_PIN_8
+#define LED0_GPIO_CLK_ENABLE()          do{ __HAL_RCC_GPIOA_CLK_ENABLE(); }while(0)             /* PA¿ÚÊ±ÖÓÊ¹ÄÜ */
 
-/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-void led_init(void);    /* ï¿½ï¿½Ê¼ï¿½ï¿½LED */
+#define LED1_GPIO_PORT                  GPIOD
+#define LED1_GPIO_PIN                   GPIO_PIN_2
+#define LED1_GPIO_CLK_ENABLE()          do{ __HAL_RCC_GPIOD_CLK_ENABLE(); }while(0)             /* PD¿ÚÊ±ÖÓÊ¹ÄÜ */
+
+/******************************************************************************************/
+/* LED¶Ë¿Ú¶¨Òå */
+#define LED0(x)   do{ x ? \
+                      HAL_GPIO_WritePin(LED0_GPIO_PORT, LED0_GPIO_PIN, GPIO_PIN_SET) : \
+                      HAL_GPIO_WritePin(LED0_GPIO_PORT, LED0_GPIO_PIN, GPIO_PIN_RESET); \
+                  }while(0)      /* LED0·­×ª */
+
+#define LED1(x)   do{ x ? \
+                      HAL_GPIO_WritePin(LED1_GPIO_PORT, LED1_GPIO_PIN, GPIO_PIN_SET) : \
+                      HAL_GPIO_WritePin(LED1_GPIO_PORT, LED1_GPIO_PIN, GPIO_PIN_RESET); \
+                  }while(0)      /* LED1·­×ª */
+
+/* LEDÈ¡·´¶¨Òå */
+#define LED0_TOGGLE()   do{ HAL_GPIO_TogglePin(LED0_GPIO_PORT, LED0_GPIO_PIN); }while(0)        /* ·­×ªLED0 */
+#define LED1_TOGGLE()   do{ HAL_GPIO_TogglePin(LED1_GPIO_PORT, LED1_GPIO_PIN); }while(0)        /* ·­×ªLED1 */
+
+/******************************************************************************************/
+/* Íâ²¿½Ó¿Úº¯Êý*/
+void led_init(void);                                                                            /* ³õÊ¼»¯ */
 
 #endif

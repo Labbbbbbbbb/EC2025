@@ -1,35 +1,34 @@
 /**
  ****************************************************************************************************
  * @file        atk_md0350.c
- * @author      ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½Å¶ï¿½(ALIENTEK)
+ * @author      ÕýµãÔ­×ÓÍÅ¶Ó(ALIENTEK)
  * @version     V1.0
  * @date        2022-06-21
- * @brief       ATK-MD0350Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @license     Copyright (c) 2020-2032, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¿Æ¼ï¿½ï¿½ï¿½ï¿½Þ¹ï¿½Ë¾
+ * @brief       ATK-MD0350Ä£¿éÇý¶¯´úÂë
+ * @license     Copyright (c) 2020-2032, ¹ãÖÝÊÐÐÇÒíµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾
  ****************************************************************************************************
  * @attention
  *
- * Êµï¿½ï¿½Æ½Ì¨:ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ M100Z-M3ï¿½ï¿½Ð¡ÏµÍ³ï¿½ï¿½STM32F103ï¿½ï¿½
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµ:www.yuanzige.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì³:www.openedv.com
- * ï¿½ï¿½Ë¾ï¿½ï¿½Ö·:www.alientek.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:openedv.taobao.com
+ * ÊµÑéÆ½Ì¨:ÕýµãÔ­×Ó MiniSTM32 V4¿ª·¢°å
+ * ÔÚÏßÊÓÆµ:www.yuanzige.com
+ * ¼¼ÊõÂÛÌ³:www.openedv.com
+ * ¹«Ë¾ÍøÖ·:www.alientek.com
+ * ¹ºÂòµØÖ·:openedv.taobao.com
  *
  ****************************************************************************************************
  */
 
 #include "atk_md0350.h"
 #include "atk_md0350_font.h"
-#include "atk_md0350_fsmc.h"
-#include "delay.h"
+#include "atk_md0350_gpio.h"
+#include "bsp_delay.h"
 
-/* ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ID */
+/* ATK-MD0350Ä£¿éLCDÇý¶¯Æ÷ID */
 #define ATK_MD0350_CHIP_ID1         0x5310
 #define ATK_MD0350_CHIP_ID2         0x7796
+uint8_t tp_type = 0;                /* 0µç×èÆÁ 1µçÈÝÆÁ */
 
-uint8_t tp_type = 0;                /* 0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-
-/* ATK-MD0350Ä£ï¿½ï¿½LCDÉ¨ï¿½è·½ï¿½ï¿½ */
+/* ATK-MD0350Ä£¿éLCDÉ¨Ãè·½Ïò */
 #define ATK_MD0350_SCAN_DIR_L2R_U2D (0x0000)
 #define ATK_MD0350_SCAN_DIR_L2R_D2U (0x0080)
 #define ATK_MD0350_SCAN_DIR_R2L_U2D (0x0040)
@@ -39,29 +38,29 @@ uint8_t tp_type = 0;                /* 0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ *
 #define ATK_MD0350_SCAN_DIR_D2U_L2R (0x00A0)
 #define ATK_MD0350_SCAN_DIR_D2U_R2L (0x00E0)
 
-/* ATK-MD0350Ä£ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½Ý½á¹¹ï¿½ï¿½ */
+/* ATK-MD0350Ä£¿é×´Ì¬Êý¾Ý½á¹¹Ìå */
 static struct
 {
-    uint16_t chip_id;                   /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ID */
-    uint16_t width;                     /* LCDï¿½ï¿½ï¿½ï¿½ */
-    uint16_t height;                    /* LCDï¿½ß¶ï¿½ */
-    atk_md0350_lcd_scan_dir_t scan_dir; /* LCDÉ¨ï¿½è·½ï¿½ï¿½ */
-    atk_md0350_lcd_disp_dir_t disp_dir; /* LCDï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ */
+    uint16_t chip_id;                   /* Çý¶¯Æ÷ID */
+    uint16_t width;                     /* LCD¿í¶È */
+    uint16_t height;                    /* LCD¸ß¶È */
+    atk_md0350_lcd_scan_dir_t scan_dir; /* LCDÉ¨Ãè·½Ïò */
+    atk_md0350_lcd_disp_dir_t disp_dir; /* LCDÏÔÊ¾·½Ïò */
 } g_atk_md0350_sta = {0};
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½ï¿½Ó²ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿éÓ²¼þ³õÊ¼»¯
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 static void atk_md0350_hw_init(void)
 {
     GPIO_InitTypeDef gpio_init_struct = {0};
     
-    /* Ê¹ï¿½ï¿½Ê±ï¿½ï¿½ */
+    /* Ê¹ÄÜÊ±ÖÓ */
     ATK_MD0350_BL_GPIO_CLK_ENABLE();
     
-    /* ï¿½ï¿½Ê¼ï¿½ï¿½BLï¿½ï¿½ï¿½ï¿½ */
+    /* ³õÊ¼»¯BLÒý½Å */
     gpio_init_struct.Pin    = ATK_MD0350_BL_GPIO_PIN;
     gpio_init_struct.Mode   = GPIO_MODE_OUTPUT_PP;
     gpio_init_struct.Pull   = GPIO_PULLUP;
@@ -72,812 +71,813 @@ static void atk_md0350_hw_init(void)
 }
 
 /**
- * @brief       ï¿½ï¿½È¡ATK-MD0350Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ID
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       »ñÈ¡ATK-MD0350Ä£¿éÇý¶¯Æ÷ID
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 static inline uint16_t atk_md0350_get_chip_id(void)
 {
     uint16_t chip_id;
     
-    atk_md0350_fsmc_write_cmd(0xD4);
-    chip_id = atk_md0350_fsmc_read_dat();
-    chip_id = atk_md0350_fsmc_read_dat();
-    chip_id = atk_md0350_fsmc_read_dat() << 8;
-    chip_id |= (atk_md0350_fsmc_read_dat()) & 0x00FF;
+    atk_md0350_gpio_write_cmd(0xD4);
+    chip_id = atk_md0350_gpio_read_dat();
+    chip_id = atk_md0350_gpio_read_dat();
+    chip_id = atk_md0350_gpio_read_dat() << 8;
+    chip_id |= (atk_md0350_gpio_read_dat()) & 0x00FF;
     
     if (chip_id != ATK_MD0350_CHIP_ID1)
     {
-        /* ï¿½ï¿½ï¿½Ô»ï¿½È¡ID2 */
-        atk_md0350_fsmc_write_cmd(0xD3);
-        chip_id = atk_md0350_fsmc_read_dat();
-        chip_id = atk_md0350_fsmc_read_dat();
-        chip_id = atk_md0350_fsmc_read_dat() << 8;
-        chip_id |= (atk_md0350_fsmc_read_dat()) & 0x00FF;
+        /* ³¢ÊÔ»ñÈ¡ID2 */
+        atk_md0350_gpio_write_cmd(0xD3);
+        chip_id = atk_md0350_gpio_read_dat();
+        chip_id = atk_md0350_gpio_read_dat();
+        chip_id = atk_md0350_gpio_read_dat() << 8;
+        chip_id |= (atk_md0350_gpio_read_dat()) & 0x00FF;
     }
-    
+
     return chip_id;
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿é¼Ä´æÆ÷³õÊ¼»¯
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 static void atk_md0350_reg_init(void)
 {
     if (g_atk_md0350_sta.chip_id == ATK_MD0350_CHIP_ID1)
     {
-        atk_md0350_fsmc_write_cmd(0xED);
-        atk_md0350_fsmc_write_dat(0x01);
-        atk_md0350_fsmc_write_dat(0xFE);
-        atk_md0350_fsmc_write_cmd(0xEE);
-        atk_md0350_fsmc_write_dat(0xDE);
-        atk_md0350_fsmc_write_dat(0x21);
-        atk_md0350_fsmc_write_cmd(0xF1);
-        atk_md0350_fsmc_write_dat(0x01);
-        atk_md0350_fsmc_write_cmd(0xDF);
-        atk_md0350_fsmc_write_dat(0x10);
-        atk_md0350_fsmc_write_cmd(0xC4);
-        atk_md0350_fsmc_write_dat(0x8F);
-        atk_md0350_fsmc_write_cmd(0xC6);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xE2);
-        atk_md0350_fsmc_write_dat(0xE2);
-        atk_md0350_fsmc_write_dat(0xE2);
-        atk_md0350_fsmc_write_cmd(0xBF);
-        atk_md0350_fsmc_write_dat(0xAA);
-        atk_md0350_fsmc_write_cmd(0xB0);
-        atk_md0350_fsmc_write_dat(0x0D);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x0D);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x11);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x19);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x21);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x2D);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x3D);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x5D);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x5D);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xB1);
-        atk_md0350_fsmc_write_dat(0x80);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x8B);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x96);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xB2);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x02);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x03);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xB3);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xB4);
-        atk_md0350_fsmc_write_dat(0x8B);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x96);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xA1);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xB5);
-        atk_md0350_fsmc_write_dat(0x02);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x03);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x04);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xB6);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xB7);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x3F);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x5E);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x64);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x8C);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xAC);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xDC);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x70);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x90);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xEB);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xDC);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xB8);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xBA);
-        atk_md0350_fsmc_write_dat(0x24);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xC1);
-        atk_md0350_fsmc_write_dat(0x20);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x54);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xFF);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xC2);
-        atk_md0350_fsmc_write_dat(0x0A);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x04);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xC3);
-        atk_md0350_fsmc_write_dat(0x3C);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x3A);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x39);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x37);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x3C);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x36);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x32);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x2F);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x2C);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x29);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x26);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x24);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x24);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x23);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x3C);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x36);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x32);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x2F);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x2C);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x29);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x26);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x24);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x24);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x23);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xC4);
-        atk_md0350_fsmc_write_dat(0x62);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x05);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x84);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xF0);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x18);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xA4);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x18);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x50);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x0C);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x17);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x95);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xF3);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xE6);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xC5);
-        atk_md0350_fsmc_write_dat(0x32);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x44);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x65);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x76);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x88);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xC6);
-        atk_md0350_fsmc_write_dat(0x20);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x17);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x01);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xC7);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xC8);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xC9);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xE0);
-        atk_md0350_fsmc_write_dat(0x16);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x1C);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x21);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x36);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x46);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x52);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x64);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x7A);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x8B);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x99);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xA8);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xB9);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xC4);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xCA);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xD2);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xD9);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xE0);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xF3);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xE1);
-        atk_md0350_fsmc_write_dat(0x16);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x1C);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x22);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x36);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x45);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x52);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x64);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x7A);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x8B);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x99);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xA8);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xB9);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xC4);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xCA);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xD2);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xD8);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xE0);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xF3);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xE2);
-        atk_md0350_fsmc_write_dat(0x05);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x0B);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x1B);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x34);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x44);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x4F);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x61);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x79);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x88);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x97);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xA6);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xB7);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xC2);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xC7);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xD1);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xD6);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xDD);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xF3);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xE3);
-        atk_md0350_fsmc_write_dat(0x05);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xA);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x1C);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x33);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x44);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x50);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x62);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x78);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x88);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x97);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xA6);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xB7);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xC2);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xC7);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xD1);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xD5);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xDD);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xF3);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xE4);
-        atk_md0350_fsmc_write_dat(0x01);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x01);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x02);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x2A);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x3C);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x4B);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x5D);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x74);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x84);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x93);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xA2);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xB3);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xBE);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xC4);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xCD);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xD3);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xDD);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xF3);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xE5);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x02);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x29);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x3C);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x4B);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x5D);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x74);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x84);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x93);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xA2);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xB3);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xBE);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xC4);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xCD);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xD3);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xDC);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xF3);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xE6);
-        atk_md0350_fsmc_write_dat(0x11);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x34);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x56);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x76);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x77);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x66);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x88);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x99);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xBB);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x99);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x66);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x55);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x55);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x45);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x43);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x44);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xE7);
-        atk_md0350_fsmc_write_dat(0x32);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x55);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x76);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x66);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x67);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x67);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x87);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x99);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xBB);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x99);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x77);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x44);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x56);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x23);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x33);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x45);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xE8);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x99);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x87);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x88);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x77);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x66);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x88);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xAA);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0xBB);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x99);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x66);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x55);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x55);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x44);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x44);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x55);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xE9);
-        atk_md0350_fsmc_write_dat(0xAA);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0x00);
-        atk_md0350_fsmc_write_dat(0xAA);
-        atk_md0350_fsmc_write_cmd(0xCF);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xF0);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x50);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xF3);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0xF9);
-        atk_md0350_fsmc_write_dat(0x06);
-        atk_md0350_fsmc_write_dat(0x10);
-        atk_md0350_fsmc_write_dat(0x29);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0x3A);
-        atk_md0350_fsmc_write_dat(0x55);
-        atk_md0350_fsmc_write_cmd(0x11);
+        atk_md0350_gpio_write_cmd(0xED);
+        atk_md0350_gpio_write_dat(0x01);
+        atk_md0350_gpio_write_dat(0xFE);
+        atk_md0350_gpio_write_cmd(0xEE);
+        atk_md0350_gpio_write_dat(0xDE);
+        atk_md0350_gpio_write_dat(0x21);
+        atk_md0350_gpio_write_cmd(0xF1);
+        atk_md0350_gpio_write_dat(0x01);
+        atk_md0350_gpio_write_cmd(0xDF);
+        atk_md0350_gpio_write_dat(0x10);
+        atk_md0350_gpio_write_cmd(0xC4);
+        atk_md0350_gpio_write_dat(0x8F);
+        atk_md0350_gpio_write_cmd(0xC6);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xE2);
+        atk_md0350_gpio_write_dat(0xE2);
+        atk_md0350_gpio_write_dat(0xE2);
+        atk_md0350_gpio_write_cmd(0xBF);
+        atk_md0350_gpio_write_dat(0xAA);
+        atk_md0350_gpio_write_cmd(0xB0);
+        atk_md0350_gpio_write_dat(0x0D);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x0D);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x11);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x19);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x21);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x2D);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x3D);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x5D);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x5D);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xB1);
+        atk_md0350_gpio_write_dat(0x80);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x8B);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x96);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xB2);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x02);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x03);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xB3);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xB4);
+        atk_md0350_gpio_write_dat(0x8B);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x96);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xA1);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xB5);
+        atk_md0350_gpio_write_dat(0x02);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x03);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x04);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xB6);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xB7);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x3F);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x5E);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x64);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x8C);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xAC);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xDC);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x70);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x90);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xEB);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xDC);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xB8);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xBA);
+        atk_md0350_gpio_write_dat(0x24);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xC1);
+        atk_md0350_gpio_write_dat(0x20);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x54);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xFF);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xC2);
+        atk_md0350_gpio_write_dat(0x0A);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x04);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xC3);
+        atk_md0350_gpio_write_dat(0x3C);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x3A);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x39);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x37);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x3C);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x36);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x32);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x2F);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x2C);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x29);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x26);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x24);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x24);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x23);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x3C);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x36);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x32);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x2F);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x2C);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x29);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x26);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x24);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x24);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x23);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xC4);
+        atk_md0350_gpio_write_dat(0x62);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x05);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x84);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xF0);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x18);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xA4);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x18);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x50);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x0C);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x17);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x95);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xF3);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xE6);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xC5);
+        atk_md0350_gpio_write_dat(0x32);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x44);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x65);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x76);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x88);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xC6);
+        atk_md0350_gpio_write_dat(0x20);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x17);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x01);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xC7);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xC8);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xC9);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xE0);
+        atk_md0350_gpio_write_dat(0x16);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x1C);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x21);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x36);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x46);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x52);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x64);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x7A);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x8B);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x99);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xA8);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xB9);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xC4);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xCA);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xD2);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xD9);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xE0);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xF3);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xE1);
+        atk_md0350_gpio_write_dat(0x16);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x1C);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x22);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x36);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x45);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x52);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x64);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x7A);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x8B);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x99);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xA8);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xB9);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xC4);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xCA);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xD2);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xD8);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xE0);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xF3);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xE2);
+        atk_md0350_gpio_write_dat(0x05);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x0B);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x1B);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x34);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x44);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x4F);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x61);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x79);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x88);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x97);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xA6);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xB7);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xC2);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xC7);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xD1);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xD6);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xDD);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xF3);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xE3);
+        atk_md0350_gpio_write_dat(0x05);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xA);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x1C);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x33);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x44);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x50);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x62);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x78);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x88);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x97);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xA6);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xB7);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xC2);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xC7);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xD1);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xD5);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xDD);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xF3);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xE4);
+        atk_md0350_gpio_write_dat(0x01);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x01);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x02);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x2A);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x3C);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x4B);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x5D);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x74);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x84);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x93);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xA2);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xB3);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xBE);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xC4);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xCD);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xD3);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xDD);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xF3);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xE5);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x02);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x29);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x3C);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x4B);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x5D);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x74);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x84);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x93);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xA2);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xB3);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xBE);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xC4);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xCD);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xD3);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xDC);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xF3);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xE6);
+        atk_md0350_gpio_write_dat(0x11);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x34);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x56);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x76);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x77);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x66);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x88);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x99);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xBB);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x99);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x66);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x55);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x55);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x45);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x43);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x44);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xE7);
+        atk_md0350_gpio_write_dat(0x32);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x55);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x76);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x66);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x67);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x67);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x87);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x99);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xBB);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x99);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x77);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x44);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x56);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x23);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x33);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x45);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xE8);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x99);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x87);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x88);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x77);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x66);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x88);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xAA);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0xBB);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x99);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x66);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x55);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x55);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x44);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x44);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x55);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xE9);
+        atk_md0350_gpio_write_dat(0xAA);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0x00);
+        atk_md0350_gpio_write_dat(0xAA);
+        atk_md0350_gpio_write_cmd(0xCF);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xF0);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x50);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xF3);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0xF9);
+        atk_md0350_gpio_write_dat(0x06);
+        atk_md0350_gpio_write_dat(0x10);
+        atk_md0350_gpio_write_dat(0x29);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0x3A);
+        atk_md0350_gpio_write_dat(0x55);
+        atk_md0350_gpio_write_cmd(0x11);
         delay_ms(100);
-        atk_md0350_fsmc_write_cmd(0x29);
-        atk_md0350_fsmc_write_cmd(0x35);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_cmd(0x51);
-        atk_md0350_fsmc_write_dat(0xFF);
-        atk_md0350_fsmc_write_cmd(0x53);
-        atk_md0350_fsmc_write_dat(0x2C);
-        atk_md0350_fsmc_write_cmd(0x55);
-        atk_md0350_fsmc_write_dat(0x82);
-        atk_md0350_fsmc_write_cmd(0x2C);
+        atk_md0350_gpio_write_cmd(0x29);
+        atk_md0350_gpio_write_cmd(0x35);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_cmd(0x51);
+        atk_md0350_gpio_write_dat(0xFF);
+        atk_md0350_gpio_write_cmd(0x53);
+        atk_md0350_gpio_write_dat(0x2C);
+        atk_md0350_gpio_write_cmd(0x55);
+        atk_md0350_gpio_write_dat(0x82);
+        atk_md0350_gpio_write_cmd(0x2C);
     }
     else if (g_atk_md0350_sta.chip_id == ATK_MD0350_CHIP_ID2)
     {
-        atk_md0350_fsmc_write_cmd(0x11);
+        atk_md0350_gpio_write_cmd(0x11);
         delay_ms(120); 
-        atk_md0350_fsmc_write_cmd(0x36);
-        atk_md0350_fsmc_write_dat(0x48);
-        atk_md0350_fsmc_write_cmd(0x3A);
-        atk_md0350_fsmc_write_dat(0x55);
-        atk_md0350_fsmc_write_cmd(0xF0);
-        atk_md0350_fsmc_write_dat(0xC3);
-        atk_md0350_fsmc_write_cmd(0xF0);
-        atk_md0350_fsmc_write_dat(0x96);
-        atk_md0350_fsmc_write_cmd(0xB4);
-        atk_md0350_fsmc_write_dat(0x01);
-        atk_md0350_fsmc_write_cmd(0xB6);
-        atk_md0350_fsmc_write_dat(0x0A);
-        atk_md0350_fsmc_write_dat(0xA2);
-        atk_md0350_fsmc_write_cmd(0xB7);
-        atk_md0350_fsmc_write_dat(0xC6);
-        atk_md0350_fsmc_write_cmd(0xB9);
-        atk_md0350_fsmc_write_dat(0x02);
-        atk_md0350_fsmc_write_dat(0xE0);
-        atk_md0350_fsmc_write_cmd(0xC0);
-        atk_md0350_fsmc_write_dat(0x80);
-        atk_md0350_fsmc_write_dat(0x16);
-        atk_md0350_fsmc_write_cmd(0xC1);
-        atk_md0350_fsmc_write_dat(0x19);
-        atk_md0350_fsmc_write_cmd(0xC2);
-        atk_md0350_fsmc_write_dat(0xA7);
-        atk_md0350_fsmc_write_cmd(0xC5);
-        atk_md0350_fsmc_write_dat(0x16);   
-        atk_md0350_fsmc_write_cmd(0xE8);
-        atk_md0350_fsmc_write_dat(0x40);
-        atk_md0350_fsmc_write_dat(0x8A);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x00);
-        atk_md0350_fsmc_write_dat(0x29);
-        atk_md0350_fsmc_write_dat(0x19);
-        atk_md0350_fsmc_write_dat(0xA5);
-        atk_md0350_fsmc_write_dat(0x33);
-        atk_md0350_fsmc_write_cmd(0xE0);
-        atk_md0350_fsmc_write_dat(0xF0);
-        atk_md0350_fsmc_write_dat(0x07);
-        atk_md0350_fsmc_write_dat(0x0D);
-        atk_md0350_fsmc_write_dat(0x04);
-        atk_md0350_fsmc_write_dat(0x05);
-        atk_md0350_fsmc_write_dat(0x14);
-        atk_md0350_fsmc_write_dat(0x36);
-        atk_md0350_fsmc_write_dat(0x54);
-        atk_md0350_fsmc_write_dat(0x4C);
-        atk_md0350_fsmc_write_dat(0x38);
-        atk_md0350_fsmc_write_dat(0x13);
-        atk_md0350_fsmc_write_dat(0x14);
-        atk_md0350_fsmc_write_dat(0x2E);
-        atk_md0350_fsmc_write_dat(0x34);
-        atk_md0350_fsmc_write_cmd(0xE1);
-        atk_md0350_fsmc_write_dat(0xF0);
-        atk_md0350_fsmc_write_dat(0x10);
-        atk_md0350_fsmc_write_dat(0x14);
-        atk_md0350_fsmc_write_dat(0x0E);
-        atk_md0350_fsmc_write_dat(0x0C);
-        atk_md0350_fsmc_write_dat(0x08);
-        atk_md0350_fsmc_write_dat(0x35);
-        atk_md0350_fsmc_write_dat(0x44);
-        atk_md0350_fsmc_write_dat(0x4C);
-        atk_md0350_fsmc_write_dat(0x26);
-        atk_md0350_fsmc_write_dat(0x10);
-        atk_md0350_fsmc_write_dat(0x12);
-        atk_md0350_fsmc_write_dat(0x2C);
-        atk_md0350_fsmc_write_dat(0x32);
-        atk_md0350_fsmc_write_cmd(0xF0);
-        atk_md0350_fsmc_write_dat(0x3C);
-        atk_md0350_fsmc_write_cmd(0xF0);
-        atk_md0350_fsmc_write_dat(0x69);
+        atk_md0350_gpio_write_cmd(0x36);
+        atk_md0350_gpio_write_dat(0x48);
+        atk_md0350_gpio_write_cmd(0x3A);
+        atk_md0350_gpio_write_dat(0x55);
+        atk_md0350_gpio_write_cmd(0xF0);
+        atk_md0350_gpio_write_dat(0xC3);
+        atk_md0350_gpio_write_cmd(0xF0);
+        atk_md0350_gpio_write_dat(0x96);
+        atk_md0350_gpio_write_cmd(0xB4);
+        atk_md0350_gpio_write_dat(0x01);
+        atk_md0350_gpio_write_cmd(0xB6);
+        atk_md0350_gpio_write_dat(0x0A);
+        atk_md0350_gpio_write_dat(0xA2);
+        atk_md0350_gpio_write_cmd(0xB7);
+        atk_md0350_gpio_write_dat(0xC6);
+        atk_md0350_gpio_write_cmd(0xB9);
+        atk_md0350_gpio_write_dat(0x02);
+        atk_md0350_gpio_write_dat(0xE0);
+        atk_md0350_gpio_write_cmd(0xC0);
+        atk_md0350_gpio_write_dat(0x80);
+        atk_md0350_gpio_write_dat(0x16);
+        atk_md0350_gpio_write_cmd(0xC1);
+        atk_md0350_gpio_write_dat(0x19);
+        atk_md0350_gpio_write_cmd(0xC2);
+        atk_md0350_gpio_write_dat(0xA7);
+        atk_md0350_gpio_write_cmd(0xC5);
+        atk_md0350_gpio_write_dat(0x16);   
+        atk_md0350_gpio_write_cmd(0xE8);
+        atk_md0350_gpio_write_dat(0x40);
+        atk_md0350_gpio_write_dat(0x8A);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x00);
+        atk_md0350_gpio_write_dat(0x29);
+        atk_md0350_gpio_write_dat(0x19);
+        atk_md0350_gpio_write_dat(0xA5);
+        atk_md0350_gpio_write_dat(0x33);
+        atk_md0350_gpio_write_cmd(0xE0);
+        atk_md0350_gpio_write_dat(0xF0);
+        atk_md0350_gpio_write_dat(0x07);
+        atk_md0350_gpio_write_dat(0x0D);
+        atk_md0350_gpio_write_dat(0x04);
+        atk_md0350_gpio_write_dat(0x05);
+        atk_md0350_gpio_write_dat(0x14);
+        atk_md0350_gpio_write_dat(0x36);
+        atk_md0350_gpio_write_dat(0x54);
+        atk_md0350_gpio_write_dat(0x4C);
+        atk_md0350_gpio_write_dat(0x38);
+        atk_md0350_gpio_write_dat(0x13);
+        atk_md0350_gpio_write_dat(0x14);
+        atk_md0350_gpio_write_dat(0x2E);
+        atk_md0350_gpio_write_dat(0x34);
+
+        atk_md0350_gpio_write_cmd(0xE1);
+        atk_md0350_gpio_write_dat(0xF0);
+        atk_md0350_gpio_write_dat(0x10);
+        atk_md0350_gpio_write_dat(0x14);
+        atk_md0350_gpio_write_dat(0x0E);
+        atk_md0350_gpio_write_dat(0x0C);
+        atk_md0350_gpio_write_dat(0x08);
+        atk_md0350_gpio_write_dat(0x35);
+        atk_md0350_gpio_write_dat(0x44);
+        atk_md0350_gpio_write_dat(0x4C);
+        atk_md0350_gpio_write_dat(0x26);
+        atk_md0350_gpio_write_dat(0x10);
+        atk_md0350_gpio_write_dat(0x12);
+        atk_md0350_gpio_write_dat(0x2C);
+        atk_md0350_gpio_write_dat(0x32);
+        atk_md0350_gpio_write_cmd(0xF0);
+        atk_md0350_gpio_write_dat(0x3C);
+        atk_md0350_gpio_write_cmd(0xF0);
+        atk_md0350_gpio_write_dat(0x69);
         delay_ms(120);
-        atk_md0350_fsmc_write_cmd(0x21);
-        atk_md0350_fsmc_write_cmd(0x29);
+        atk_md0350_gpio_write_cmd(0x21);
+        atk_md0350_gpio_write_cmd(0x29);
     }
 }
 
 /**
- * @brief       ï¿½ï¿½ï¿½ï¿½ATK-MD0350Ä£ï¿½ï¿½ï¿½Ðµï¿½Ö·
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ÉèÖÃATK-MD0350Ä£¿éÁÐµØÖ·
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 static void atk_md0350_set_column_address(uint16_t sc, uint16_t ec)
 {
-    atk_md0350_fsmc_write_cmd(0x2A);
-    atk_md0350_fsmc_write_dat((uint8_t)(sc >> 8) & 0xFF);
-    atk_md0350_fsmc_write_dat((uint8_t)sc & 0xFF);
-    atk_md0350_fsmc_write_dat((uint8_t)(ec >> 8) & 0xFF);
-    atk_md0350_fsmc_write_dat((uint8_t)ec & 0xFF);
+    atk_md0350_gpio_write_cmd(0x2A);
+    atk_md0350_gpio_write_dat((uint8_t)(sc >> 8) & 0xFF);
+    atk_md0350_gpio_write_dat((uint8_t)sc & 0xFF);
+    atk_md0350_gpio_write_dat((uint8_t)(ec >> 8) & 0xFF);
+    atk_md0350_gpio_write_dat((uint8_t)ec & 0xFF);
 }
 
 /**
- * @brief       ï¿½ï¿½ï¿½ï¿½ATK-MD0350Ä£ï¿½ï¿½Ò³ï¿½ï¿½Ö·
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ÉèÖÃATK-MD0350Ä£¿éÒ³µØÖ·
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 static void atk_md0350_set_page_address(uint16_t sp, uint16_t ep)
 {
-    atk_md0350_fsmc_write_cmd(0x2B);
-    atk_md0350_fsmc_write_dat((uint8_t)(sp >> 8) & 0xFF);
-    atk_md0350_fsmc_write_dat((uint8_t)sp & 0xFF);
-    atk_md0350_fsmc_write_dat((uint8_t)(ep >> 8) & 0xFF);
-    atk_md0350_fsmc_write_dat((uint8_t)ep & 0xFF);
+    atk_md0350_gpio_write_cmd(0x2B);
+    atk_md0350_gpio_write_dat((uint8_t)(sp >> 8) & 0xFF);
+    atk_md0350_gpio_write_dat((uint8_t)sp & 0xFF);
+    atk_md0350_gpio_write_dat((uint8_t)(ep >> 8) & 0xFF);
+    atk_md0350_gpio_write_dat((uint8_t)ep & 0xFF);
 }
 
 /**
- * @brief       ï¿½ï¿½Ê¼Ð´ATK-MD0350Ä£ï¿½ï¿½ï¿½Ô´ï¿½
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ¿ªÊ¼Ð´ATK-MD0350Ä£¿éÏÔ´æ
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 static void atk_md0350_start_write_memory(void)
 {
-    atk_md0350_fsmc_write_cmd(0x2C);
+    atk_md0350_gpio_write_cmd(0x2C);
 }
 
 /**
- * @brief       ï¿½ï¿½Ê¼ï¿½ï¿½ATK-MD0350Ä£ï¿½ï¿½ï¿½Ô´ï¿½
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ¿ªÊ¼¶ÁATK-MD0350Ä£¿éÏÔ´æ
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 static void atk_md0350_start_read_memory(void)
 {
-    atk_md0350_fsmc_write_cmd(0x2E);
+    atk_md0350_gpio_write_cmd(0x2E);
 }
 
 /**
- * @brief       Æ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½x^y
- * @param       x: ï¿½ï¿½ï¿½ï¿½
- *              y: Ö¸ï¿½ï¿½
+ * @brief       Æ½·½º¯Êý£¬x^y
+ * @param       x: µ×Êý
+ *              y: Ö¸Êý
  * @retval      x^y
  */
 static uint32_t atk_md0350_pow(uint8_t x, uint8_t y)
@@ -894,18 +894,18 @@ static uint32_t atk_md0350_pow(uint8_t x, uint8_t y)
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
- * @param       ï¿½ï¿½
- * @retval      ATK_MD0350_EOK  : ATK_MD0350Ä£ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½É¹ï¿½
- *              ATK_MD0350_ERROR: ATK_MD0350Ä£ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½Ê§ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿é³õÊ¼»¯
+ * @param       ÎÞ
+ * @retval      ATK_MD0350_EOK  : ATK_MD0350Ä£¿é³õÊ¼»¯³É¹¦
+ *              ATK_MD0350_ERROR: ATK_MD0350Ä£¿é³õÊ¼»¯Ê§°Ü
  */
 uint8_t atk_md0350_init(void)
 {
     uint16_t chip_id;
     
-    atk_md0350_hw_init();               /* ATK-MD0350Ä£ï¿½ï¿½Ó²ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ */
-    atk_md0350_fsmc_init();             /* ATK-MD0350Ä£ï¿½ï¿½FSMCï¿½Ó¿Ú³ï¿½Ê¼ï¿½ï¿½ */
-    chip_id = atk_md0350_get_chip_id(); /* ï¿½ï¿½È¡ATK-MD0350Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ID */
+    atk_md0350_hw_init();               /* ATK-MD0350Ä£¿éÓ²¼þ³õÊ¼»¯ */
+    atk_md0350_gpio_init();             /* ATK-MD0350Ä£¿éGPIO½Ó¿Ú³õÊ¼»¯ */
+    chip_id = atk_md0350_get_chip_id(); /* »ñÈ¡ATK-MD0350Ä£¿éÇý¶¯Æ÷ID */
     if ((chip_id != ATK_MD0350_CHIP_ID1) && (chip_id != ATK_MD0350_CHIP_ID2))
     {
         return ATK_MD0350_ERROR;
@@ -929,9 +929,9 @@ uint8_t atk_md0350_init(void)
 }
 
 /**
- * @brief       ï¿½ï¿½È¡ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ï¿½
- * @param       ï¿½ï¿½
- * @retval      ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ï¿½
+ * @brief       »ñÈ¡ATK-MD0350Ä£¿éLCD¿í¶È
+ * @param       ÎÞ
+ * @retval      ATK-MD0350Ä£¿éLCD¿í¶È
  */
 uint16_t atk_md0350_get_lcd_width(void)
 {
@@ -939,9 +939,9 @@ uint16_t atk_md0350_get_lcd_width(void)
 }
 
 /**
- * @brief       ï¿½ï¿½È¡ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ß¶ï¿½
- * @param       ï¿½ï¿½
- * @retval      ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ß¶ï¿½
+ * @brief       »ñÈ¡ATK-MD0350Ä£¿éLCD¸ß¶È
+ * @param       ÎÞ
+ * @retval      ATK-MD0350Ä£¿éLCD¸ß¶È
  */
 uint16_t atk_md0350_get_lcd_height(void)
 {
@@ -949,9 +949,9 @@ uint16_t atk_md0350_get_lcd_height(void)
 }
 
 /**
- * @brief       ï¿½ï¿½ï¿½ï¿½ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ï¿½
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ¿ªÆôATK-MD0350Ä£¿éLCD±³¹â
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 void atk_md0350_backlight_on(void)
 {
@@ -959,9 +959,9 @@ void atk_md0350_backlight_on(void)
 }
 
 /**
- * @brief       ï¿½Ø±ï¿½ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ï¿½
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ¹Ø±ÕATK-MD0350Ä£¿éLCD±³¹â
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 void atk_md0350_backlight_off(void)
 {
@@ -969,38 +969,38 @@ void atk_md0350_backlight_off(void)
 }
 
 /**
- * @brief       ï¿½ï¿½ï¿½ï¿½ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ¿ªÆôATK-MD0350Ä£¿éLCDÏÔÊ¾
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 void atk_md0350_display_on(void)
 {
-    atk_md0350_fsmc_write_cmd(0x29);
+    atk_md0350_gpio_write_cmd(0x29);
 }
 
 /**
- * @brief       ï¿½Ø±ï¿½ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ¹Ø±ÕATK-MD0350Ä£¿éLCDÏÔÊ¾
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 void atk_md0350_display_off(void)
 {
-    atk_md0350_fsmc_write_cmd(0x28);
+    atk_md0350_gpio_write_cmd(0x28);
 }
 
 /**
- * @brief       ï¿½ï¿½ï¿½ï¿½ATK-MD0350Ä£ï¿½ï¿½LCDÉ¨ï¿½è·½ï¿½ï¿½
- * @param       scan_dir: ATK_MD0350_LCD_SCAN_DIR_L2R_U2D: ï¿½ï¿½ï¿½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½
- *                        ATK_MD0350_LCD_SCAN_DIR_L2R_D2U: ï¿½ï¿½ï¿½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½Âµï¿½ï¿½ï¿½
- *                        ATK_MD0350_LCD_SCAN_DIR_R2L_U2D: ï¿½ï¿½ï¿½Òµï¿½ï¿½ó£¬´ï¿½ï¿½Ïµï¿½ï¿½ï¿½
- *                        ATK_MD0350_LCD_SCAN_DIR_R2L_D2U: ï¿½ï¿½ï¿½Òµï¿½ï¿½ó£¬´ï¿½ï¿½Âµï¿½ï¿½ï¿½
- *                        ATK_MD0350_LCD_SCAN_DIR_U2D_L2R: ï¿½ï¿½ï¿½Ïµï¿½ï¿½Â£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- *                        ATK_MD0350_LCD_SCAN_DIR_U2D_R2L: ï¿½ï¿½ï¿½Ïµï¿½ï¿½Â£ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½
- *                        ATK_MD0350_LCD_SCAN_DIR_D2U_L2R: ï¿½ï¿½ï¿½Âµï¿½ï¿½Ï£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- *                        ATK_MD0350_LCD_SCAN_DIR_D2U_R2L: ï¿½ï¿½ï¿½Âµï¿½ï¿½Ï£ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½
- * @retval      ATK_MD0350_EOK   : ï¿½ï¿½ï¿½ï¿½ATK-MD0350Ä£ï¿½ï¿½LCDÉ¨ï¿½è·½ï¿½ï¿½É¹ï¿½
- *              ATK_MD0350_ERROR : ï¿½ï¿½ï¿½ï¿½ATK-MD0350Ä£ï¿½ï¿½LCDÉ¨ï¿½è·½ï¿½ï¿½Ê§ï¿½ï¿½
-*               ATK_MD0350_EINVAL: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @brief       ÉèÖÃATK-MD0350Ä£¿éLCDÉ¨Ãè·½Ïò
+ * @param       scan_dir: ATK_MD0350_LCD_SCAN_DIR_L2R_U2D: ´Ó×óµ½ÓÒ£¬´ÓÉÏµ½ÏÂ
+ *                        ATK_MD0350_LCD_SCAN_DIR_L2R_D2U: ´Ó×óµ½ÓÒ£¬´ÓÏÂµ½ÉÏ
+ *                        ATK_MD0350_LCD_SCAN_DIR_R2L_U2D: ´ÓÓÒµ½×ó£¬´ÓÉÏµ½ÏÂ
+ *                        ATK_MD0350_LCD_SCAN_DIR_R2L_D2U: ´ÓÓÒµ½×ó£¬´ÓÏÂµ½ÉÏ
+ *                        ATK_MD0350_LCD_SCAN_DIR_U2D_L2R: ´ÓÉÏµ½ÏÂ£¬´Ó×óµ½ÓÒ
+ *                        ATK_MD0350_LCD_SCAN_DIR_U2D_R2L: ´ÓÉÏµ½ÏÂ£¬´ÓÓÒµ½×ó
+ *                        ATK_MD0350_LCD_SCAN_DIR_D2U_L2R: ´ÓÏÂµ½ÉÏ£¬´Ó×óµ½ÓÒ
+ *                        ATK_MD0350_LCD_SCAN_DIR_D2U_R2L: ´ÓÏÂµ½ÉÏ£¬´ÓÓÒµ½×ó
+ * @retval      ATK_MD0350_EOK   : ÉèÖÃATK-MD0350Ä£¿éLCDÉ¨Ãè·½Ïò³É¹¦
+ *              ATK_MD0350_ERROR : ÉèÖÃATK-MD0350Ä£¿éLCDÉ¨Ãè·½ÏòÊ§°Ü
+*               ATK_MD0350_EINVAL: ´«Èë²ÎÊý´íÎó
  */
 uint8_t atk_md0350_set_scan_dir(atk_md0350_lcd_scan_dir_t scan_dir)
 {
@@ -1174,12 +1174,12 @@ uint8_t atk_md0350_set_scan_dir(atk_md0350_lcd_scan_dir_t scan_dir)
     
     g_atk_md0350_sta.scan_dir = (atk_md0350_lcd_scan_dir_t)reg36;
     
-    if (g_atk_md0350_sta.chip_id == ATK_MD0350_CHIP_ID2)   /* ST7796Òªï¿½ï¿½ï¿½ï¿½BGRÎ» */
+    if (g_atk_md0350_sta.chip_id == ATK_MD0350_CHIP_ID2)   /* ST7796ÒªÉèÖÃBGRÎ» */
     {
         reg36 |= 0x08;
     }
     
-    atk_md0350_fsmc_write_reg(0x36, reg36);
+    atk_md0350_gpio_write_reg(0X36, reg36);
     atk_md0350_set_column_address(0, g_atk_md0350_sta.width - 1);
     atk_md0350_set_page_address(0, g_atk_md0350_sta.height - 1);
     
@@ -1187,13 +1187,13 @@ uint8_t atk_md0350_set_scan_dir(atk_md0350_lcd_scan_dir_t scan_dir)
 }
 
 /**
- * @brief       ï¿½ï¿½ï¿½ï¿½ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
- * @param       disp_dir: ATK_MD0350_LCD_DISP_DIR_0  : LCDË³Ê±ï¿½ï¿½ï¿½ï¿½×ª0ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
- *                        ATK_MD0350_LCD_DISP_DIR_90 : LCDË³Ê±ï¿½ï¿½ï¿½ï¿½×ª90ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
- *                        ATK_MD0350_LCD_DISP_DIR_180: LCDË³Ê±ï¿½ï¿½ï¿½ï¿½×ª180ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
- *                        ATK_MD0350_LCD_DISP_DIR_270: LCDË³Ê±ï¿½ï¿½ï¿½ï¿½×ª270ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
- * @retval      ATK_MD0350_EOK   : ï¿½ï¿½ï¿½ï¿½ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½É¹ï¿½
- *              ATK_MD0350_EINVAL: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @brief       ÉèÖÃATK-MD0350Ä£¿éLCDÏÔÊ¾·½Ïò
+ * @param       disp_dir: ATK_MD0350_LCD_DISP_DIR_0  : LCDË³Ê±ÕëÐý×ª0¡ãÏÔÊ¾ÄÚÈÝ
+ *                        ATK_MD0350_LCD_DISP_DIR_90 : LCDË³Ê±ÕëÐý×ª90¡ãÏÔÊ¾ÄÚÈÝ
+ *                        ATK_MD0350_LCD_DISP_DIR_180: LCDË³Ê±ÕëÐý×ª180¡ãÏÔÊ¾ÄÚÈÝ
+ *                        ATK_MD0350_LCD_DISP_DIR_270: LCDË³Ê±ÕëÐý×ª270¡ãÏÔÊ¾ÄÚÈÝ
+ * @retval      ATK_MD0350_EOK   : ÉèÖÃATK-MD0350Ä£¿éLCDÏÔÊ¾·½Ïò³É¹¦
+ *              ATK_MD0350_EINVAL: ´«Èë²ÎÊý´íÎó
  */
 uint8_t atk_md0350_set_disp_dir(atk_md0350_lcd_disp_dir_t disp_dir)
 {
@@ -1236,9 +1236,9 @@ uint8_t atk_md0350_set_disp_dir(atk_md0350_lcd_disp_dir_t disp_dir)
 }
 
 /**
- * @brief       ï¿½ï¿½È¡ATK-MD0350Ä£ï¿½ï¿½LCDÉ¨ï¿½è·½ï¿½ï¿½
- * @param       ï¿½ï¿½
- * @retval      ATK-MD0350Ä£ï¿½ï¿½LCDÉ¨ï¿½è·½ï¿½ï¿½
+ * @brief       »ñÈ¡ATK-MD0350Ä£¿éLCDÉ¨Ãè·½Ïò
+ * @param       ÎÞ
+ * @retval      ATK-MD0350Ä£¿éLCDÉ¨Ãè·½Ïò
  */
 atk_md0350_lcd_scan_dir_t atk_md0350_get_scan_dir(void)
 {
@@ -1246,9 +1246,9 @@ atk_md0350_lcd_scan_dir_t atk_md0350_get_scan_dir(void)
 }
 
 /**
- * @brief       ï¿½ï¿½È¡ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
- * @param       ï¿½ï¿½
- * @retval      ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
+ * @brief       »ñÈ¡ATK-MD0350Ä£¿éLCDÏÔÊ¾·½Ïò
+ * @param       ÎÞ
+ * @retval      ATK-MD0350Ä£¿éLCDÏÔÊ¾·½Ïò
  */
 atk_md0350_lcd_disp_dir_t atk_md0350_get_disp_dir(void)
 {
@@ -1256,13 +1256,13 @@ atk_md0350_lcd_disp_dir_t atk_md0350_get_disp_dir(void)
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @param       xs   : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼Xï¿½ï¿½ï¿½ï¿½
- *              ys   : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼Yï¿½ï¿½ï¿½ï¿½
- *              xe   : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¹Xï¿½ï¿½ï¿½ï¿½
- *              ye   : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¹Yï¿½ï¿½ï¿½ï¿½
- *              color: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿éLCDÇøÓòÌî³ä
+ * @param       xs   : ÇøÓòÆðÊ¼X×ø±ê
+ *              ys   : ÇøÓòÆðÊ¼Y×ø±ê
+ *              xe   : ÇøÓòÖÕÖ¹X×ø±ê
+ *              ye   : ÇøÓòÖÕÖ¹Y×ø±ê
+ *              color: ÇøÓòÌî³äÑÕÉ«
+ * @retval      ÎÞ
  */
 void atk_md0350_fill(uint16_t xs, uint16_t ys, uint16_t xe, uint16_t ye, uint16_t color)
 {
@@ -1276,15 +1276,15 @@ void atk_md0350_fill(uint16_t xs, uint16_t ys, uint16_t xe, uint16_t ye, uint16_
     {
         for (x_index=xs; x_index<= xe; x_index++)
         {
-            atk_md0350_fsmc_write_dat(color);
+            atk_md0350_gpio_write_dat(color);
         }
     }
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ï¿½
- * @param       color: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿éLCDÇåÆÁ
+ * @param       color: ÇåÆÁÑÕÉ«
+ * @retval      ÎÞ
  */
 void atk_md0350_clear(uint16_t color)
 {
@@ -1292,25 +1292,25 @@ void atk_md0350_clear(uint16_t color)
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ï¿½
- * @param       x    : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½
- *              y    : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Yï¿½ï¿½ï¿½ï¿½
- *              color: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿éLCD»­µã
+ * @param       x    : ´ý»­µãµÄX×ø±ê
+ *              y    : ´ý»­µãµÄY×ø±ê
+ *              color: ´ý»­µãµÄÑÕÉ«
+ * @retval      ÎÞ
  */
 void atk_md0350_draw_point(uint16_t x, uint16_t y, uint16_t color)
 {
     atk_md0350_set_column_address(x, x);
     atk_md0350_set_page_address(y, y);
     atk_md0350_start_write_memory();
-    atk_md0350_fsmc_write_dat(color);
+    atk_md0350_gpio_write_dat(color);
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ï¿½
- * @param       x    : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½
- *              y    : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Yï¿½ï¿½ï¿½ï¿½
- * @retval      ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«
+ * @brief       ATK-MD0350Ä£¿éLCD¶Áµã
+ * @param       x    : ´ý¶ÁµãµÄX×ø±ê
+ *              y    : ´ý¶ÁµãµÄY×ø±ê
+ * @retval      ´ý¶ÁµãµÄÑÕÉ«
  */
 uint16_t atk_md0350_read_point(uint16_t x, uint16_t y)
 {
@@ -1328,24 +1328,24 @@ uint16_t atk_md0350_read_point(uint16_t x, uint16_t y)
     atk_md0350_set_page_address(y, y);
     atk_md0350_start_read_memory();
     
-    color = atk_md0350_fsmc_read_dat(); /* Dummy */
-    color = atk_md0350_fsmc_read_dat(); /* [15:11]: R, [7:2]:G */
+    color = atk_md0350_gpio_read_dat(); /* Dummy */
+    color = atk_md0350_gpio_read_dat(); /* [15:11]: R, [7:2]:G */
     color_r = (uint8_t)(color >> 11) & 0x1F;
     color_g = (uint8_t)(color >> 2) & 0x3F;
-    color = atk_md0350_fsmc_read_dat(); /* [15:11]: B */
+    color = atk_md0350_gpio_read_dat(); /* [15:11]: B */
     color_b = (uint8_t)(color >> 11) & 0x1F;
     
     return (uint16_t)(color_r << 11) | (color_g << 5) | color_b;
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ß¶ï¿½
- * @param       x1   : ï¿½ï¿½ï¿½ï¿½ï¿½ß¶Î¶Ëµï¿½1ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½
- *              y1   : ï¿½ï¿½ï¿½ï¿½ï¿½ß¶Î¶Ëµï¿½1ï¿½ï¿½Yï¿½ï¿½ï¿½ï¿½
- *              x2   : ï¿½ï¿½ï¿½ï¿½ï¿½ß¶Î¶Ëµï¿½2ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½
- *              y2   : ï¿½ï¿½ï¿½ï¿½ï¿½ß¶Î¶Ëµï¿½2ï¿½ï¿½Yï¿½ï¿½ï¿½ï¿½
- *              color: ï¿½ï¿½ï¿½ï¿½ï¿½ß¶Îµï¿½ï¿½ï¿½É«
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿éLCD»­Ïß¶Î
+ * @param       x1   : ´ý»­Ïß¶Î¶Ëµã1µÄX×ø±ê
+ *              y1   : ´ý»­Ïß¶Î¶Ëµã1µÄY×ø±ê
+ *              x2   : ´ý»­Ïß¶Î¶Ëµã2µÄX×ø±ê
+ *              y2   : ´ý»­Ïß¶Î¶Ëµã2µÄY×ø±ê
+ *              color: ´ý»­Ïß¶ÎµÄÑÕÉ«
+ * @retval      ÎÞ
  */
 void atk_md0350_draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color)
 {
@@ -1384,13 +1384,13 @@ void atk_md0350_draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, ui
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ï¿½ï¿½Î¿ï¿½
- * @param       x1   : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¿ï¿½Ëµï¿½1ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½
- *              y1   : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¿ï¿½Ëµï¿½1ï¿½ï¿½Yï¿½ï¿½ï¿½ï¿½
- *              x2   : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¿ï¿½Ëµï¿½2ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½
- *              y2   : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¿ï¿½Ëµï¿½2ï¿½ï¿½Yï¿½ï¿½ï¿½ï¿½
- *              color: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¿ï¿½ï¿½ï¿½ï¿½É«
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿éLCD»­¾ØÐÎ¿ò
+ * @param       x1   : ´ý»­¾ØÐÎ¿ò¶Ëµã1µÄX×ø±ê
+ *              y1   : ´ý»­¾ØÐÎ¿ò¶Ëµã1µÄY×ø±ê
+ *              x2   : ´ý»­¾ØÐÎ¿ò¶Ëµã2µÄX×ø±ê
+ *              y2   : ´ý»­¾ØÐÎ¿ò¶Ëµã2µÄY×ø±ê
+ *              color: ´ý»­¾ØÐÎ¿òµÄÑÕÉ«
+ * @retval      ÎÞ
  */
 void atk_md0350_draw_rect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color)
 {
@@ -1401,12 +1401,12 @@ void atk_md0350_draw_rect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, ui
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ô²ï¿½Î¿ï¿½
- * @param       x    : ï¿½ï¿½ï¿½ï¿½Ô²ï¿½Î¿ï¿½Ô­ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½
- *              y    : ï¿½ï¿½ï¿½ï¿½Ô²ï¿½Î¿ï¿½Ô­ï¿½ï¿½ï¿½Yï¿½ï¿½ï¿½ï¿½
- *              r    : ï¿½ï¿½ï¿½ï¿½Ô²ï¿½Î¿ï¿½Ä°ë¾¶
- *              color: ï¿½ï¿½ï¿½ï¿½Ô²ï¿½Î¿ï¿½ï¿½ï¿½ï¿½É«
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿éLCD»­Ô²ÐÎ¿ò
+ * @param       x    : ´ý»­Ô²ÐÎ¿òÔ­µãµÄX×ø±ê
+ *              y    : ´ý»­Ô²ÐÎ¿òÔ­µãµÄY×ø±ê
+ *              r    : ´ý»­Ô²ÐÎ¿òµÄ°ë¾¶
+ *              color: ´ý»­Ô²ÐÎ¿òµÄÑÕÉ«
+ * @retval      ÎÞ
  */
 void atk_md0350_draw_circle(uint16_t x, uint16_t y, uint16_t r, uint16_t color)
 {
@@ -1445,13 +1445,13 @@ void atk_md0350_draw_circle(uint16_t x, uint16_t y, uint16_t r, uint16_t color)
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾1ï¿½ï¿½ï¿½Ö·ï¿½
- * @param       x    : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½Ö·ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½
- *              y    : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½Ö·ï¿½ï¿½ï¿½Yï¿½ï¿½ï¿½ï¿½
- *              ch   : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½Ö·ï¿½
- *              font : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- *              color: ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½É«
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿éLCDÏÔÊ¾1¸ö×Ö·û
+ * @param       x    : ´ýÏÔÊ¾×Ö·ûµÄX×ø±ê
+ *              y    : ´ýÏÔÊ¾×Ö·ûµÄY×ø±ê
+ *              ch   : ´ýÏÔÊ¾×Ö·û
+ *              font : ´ýÏÔÊ¾×Ö·ûµÄ×ÖÌå
+ *              color: ´ýÏÔÊ¾×Ö·ûµÄÑÕÉ«
+ * @retval      ÎÞ
  */
 void atk_md0350_show_char(uint16_t x, uint16_t y, char ch, atk_md0350_lcd_font_t font, uint16_t color)
 {
@@ -1543,16 +1543,16 @@ void atk_md0350_show_char(uint16_t x, uint16_t y, char ch, atk_md0350_lcd_font_t
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾ï¿½Ö·ï¿½ï¿½ï¿½
- * @note        ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ÐºÍ»ï¿½Ò³
- * @param       x     : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½
- *              y     : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½Yï¿½ï¿½ï¿½ï¿½
- *              width : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ß¶ï¿½
- *              height: ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
- *              str   : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½Ö·ï¿½ï¿½ï¿½
- *              font  : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- *              color : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿éLCDÏÔÊ¾×Ö·û´®
+ * @note        »á×Ô¶¯»»ÐÐºÍ»»Ò³
+ * @param       x     : ´ýÏÔÊ¾×Ö·û´®µÄX×ø±ê
+ *              y     : ´ýÏÔÊ¾×Ö·û´®µÄY×ø±ê
+ *              width : ´ýÏÔÊ¾×Ö·û´®µÄÏÔÊ¾¸ß¶È
+ *              height: ´ýÏÔÊ¾×Ö·û´®µÄÏÔÊ¾¿í¶È
+ *              str   : ´ýÏÔÊ¾×Ö·û´®
+ *              font  : ´ýÏÔÊ¾×Ö·û´®µÄ×ÖÌå
+ *              color : ´ýÏÔÊ¾×Ö·û´®µÄÑÕÉ«
+ * @retval      ÎÞ
  */
 void atk_md0350_show_string(uint16_t x, uint16_t y, uint16_t width, uint16_t height, char *str, atk_md0350_lcd_font_t font, uint16_t color)
 {
@@ -1630,16 +1630,16 @@ void atk_md0350_show_string(uint16_t x, uint16_t y, uint16_t width, uint16_t hei
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Ö£ï¿½ï¿½É¿ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½Î»0
- * @param       x    : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Öµï¿½Xï¿½ï¿½ï¿½ï¿½
- *              y    : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Öµï¿½Yï¿½ï¿½ï¿½ï¿½
- *              num  : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
- *              len  : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Öµï¿½Î»ï¿½ï¿½
- *              mode : ATK_MD0350_NUM_SHOW_NOZERO: ï¿½ï¿½ï¿½Ö¸ï¿½Î»0ï¿½ï¿½ï¿½ï¿½Ê¾
- *                     ATK_MD0350_NUM_SHOW_ZERO  : ï¿½ï¿½ï¿½Ö¸ï¿½Î»0ï¿½ï¿½Ê¾
- *              font : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½
- *              color: ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½É«
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿éLCDÏÔÊ¾Êý×Ö£¬¿É¿ØÖÆÏÔÊ¾¸ßÎ»0
+ * @param       x    : ´ýÏÔÊ¾Êý×ÖµÄX×ø±ê
+ *              y    : ´ýÏÔÊ¾Êý×ÖµÄY×ø±ê
+ *              num  : ´ýÏÔÊ¾Êý×Ö
+ *              len  : ´ýÏÔÊ¾Êý×ÖµÄÎ»Êý
+ *              mode : ATK_MD0350_NUM_SHOW_NOZERO: Êý×Ö¸ßÎ»0²»ÏÔÊ¾
+ *                     ATK_MD0350_NUM_SHOW_ZERO  : Êý×Ö¸ßÎ»0ÏÔÊ¾
+ *              font : ´ýÏÔÊ¾Êý×ÖµÄ×ÖÌå
+ *              color: ´ýÏÔÊ¾Êý×ÖµÄÑÕÉ«
+ * @retval      ÎÞ
  */
 void atk_md0350_show_xnum(uint16_t x, uint16_t y, uint32_t num, uint8_t len, atk_md0350_num_mode_t mode, atk_md0350_lcd_font_t font, uint16_t color)
 {
@@ -1724,14 +1724,14 @@ void atk_md0350_show_xnum(uint16_t x, uint16_t y, uint32_t num, uint8_t len, atk
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Ö£ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½Î»0
- * @param       x    : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Öµï¿½Xï¿½ï¿½ï¿½ï¿½
- *              y    : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Öµï¿½Yï¿½ï¿½ï¿½ï¿½
- *              num  : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
- *              len  : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Öµï¿½Î»ï¿½ï¿½
- *              font : ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½
- *              color: ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½É«
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿éLCDÏÔÊ¾Êý×Ö£¬²»ÏÔÊ¾¸ßÎ»0
+ * @param       x    : ´ýÏÔÊ¾Êý×ÖµÄX×ø±ê
+ *              y    : ´ýÏÔÊ¾Êý×ÖµÄY×ø±ê
+ *              num  : ´ýÏÔÊ¾Êý×Ö
+ *              len  : ´ýÏÔÊ¾Êý×ÖµÄÎ»Êý
+ *              font : ´ýÏÔÊ¾Êý×ÖµÄ×ÖÌå
+ *              color: ´ýÏÔÊ¾Êý×ÖµÄÑÕÉ«
+ * @retval      ÎÞ
  */
 void atk_md0350_show_num(uint16_t x, uint16_t y, uint32_t num, uint8_t len, atk_md0350_lcd_font_t font, uint16_t color)
 {
@@ -1739,14 +1739,14 @@ void atk_md0350_show_num(uint16_t x, uint16_t y, uint32_t num, uint8_t len, atk_
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½ï¿½LCDÍ¼Æ¬
- * @note        Í¼Æ¬È¡Ä£ï¿½ï¿½Ê½: Ë®Æ½É¨ï¿½è¡¢RGB565ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½Ç°
- * @param       x     : ï¿½ï¿½ï¿½ï¿½Ê¾Í¼Æ¬ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½
- *              y     : ï¿½ï¿½ï¿½ï¿½Ê¾Í¼Æ¬ï¿½ï¿½Yï¿½ï¿½ï¿½ï¿½
- *              width : ï¿½ï¿½ï¿½ï¿½Ê¾Í¼Æ¬ï¿½Ä¿ï¿½ï¿½ï¿½
- *              height: ï¿½ï¿½ï¿½ï¿½Ê¾Í¼Æ¬ï¿½Ä¸ß¶ï¿½
- *              pic   : ï¿½ï¿½ï¿½ï¿½Ê¾Í¼Æ¬ï¿½ï¿½ï¿½ï¿½ï¿½×µï¿½Ö·
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿éLCDÍ¼Æ¬
+ * @note        Í¼Æ¬È¡Ä£·½Ê½: Ë®Æ½É¨Ãè¡¢RGB565¡¢¸ßÎ»ÔÚÇ°
+ * @param       x     : ´ýÏÔÊ¾Í¼Æ¬µÄX×ø±ê
+ *              y     : ´ýÏÔÊ¾Í¼Æ¬µÄY×ø±ê
+ *              width : ´ýÏÔÊ¾Í¼Æ¬µÄ¿í¶È
+ *              height: ´ýÏÔÊ¾Í¼Æ¬µÄ¸ß¶È
+ *              pic   : ´ýÏÔÊ¾Í¼Æ¬Êý×éÊ×µØÖ·
+ * @retval      ÎÞ
  */
 void atk_md0350_show_pic(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t *pic)
 {
@@ -1765,7 +1765,7 @@ void atk_md0350_show_pic(uint16_t x, uint16_t y, uint16_t width, uint16_t height
     {
         for (x_index=x; x_index<=(x + width); x_index++)
         {
-            atk_md0350_fsmc_write_dat(*pic);
+            atk_md0350_gpio_write_dat(*pic);
             pic++;
         }
     }

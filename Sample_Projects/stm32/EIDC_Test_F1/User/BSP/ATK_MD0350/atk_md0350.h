@@ -1,19 +1,19 @@
 /**
  ****************************************************************************************************
  * @file        atk_md0350.h
- * @author      ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½Å¶ï¿½(ALIENTEK)
+ * @author      ÕýµãÔ­×ÓÍÅ¶Ó(ALIENTEK)
  * @version     V1.0
  * @date        2022-06-21
- * @brief       ATK-MD0350Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @license     Copyright (c) 2020-2032, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¿Æ¼ï¿½ï¿½ï¿½ï¿½Þ¹ï¿½Ë¾
+ * @brief       ATK-MD0350Ä£¿éÇý¶¯´úÂë
+ * @license     Copyright (c) 2020-2032, ¹ãÖÝÊÐÐÇÒíµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾
  ****************************************************************************************************
  * @attention
  *
- * Êµï¿½ï¿½Æ½Ì¨:ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ M100Z-M3ï¿½ï¿½Ð¡ÏµÍ³ï¿½ï¿½STM32F103ï¿½ï¿½
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµ:www.yuanzige.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì³:www.openedv.com
- * ï¿½ï¿½Ë¾ï¿½ï¿½Ö·:www.alientek.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:openedv.taobao.com
+ * ÊµÑéÆ½Ì¨:ÕýµãÔ­×Ó MiniSTM32 V4¿ª·¢°å
+ * ÔÚÏßÊÓÆµ:www.yuanzige.com
+ * ¼¼ÊõÂÛÌ³:www.openedv.com
+ * ¹«Ë¾ÍøÖ·:www.alientek.com
+ * ¹ºÂòµØÖ·:openedv.taobao.com
  *
  ****************************************************************************************************
  */
@@ -21,95 +21,95 @@
 #ifndef __ATK_MD0350_H
 #define __ATK_MD0350_H
 
-#include "sys.h"
+#include "stm32f1xx.h"
 
-/* ï¿½ï¿½ï¿½ï¿½ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ß´ï¿½ */
+/* ¶¨ÒåATK-MD0350Ä£¿éLCD³ß´ç */
 #define ATK_MD0350_LCD_WIDTH            320
 #define ATK_MD0350_LCD_HEIGHT           480
 
-/* ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½Ê¹ï¿½ï¿½ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½ */
+/* ¶¨ÒåÊÇ·ñÊ¹ÓÃATK-MD0350Ä£¿é´¥Ãþ */
 #define ATK_MD0350_USING_TOUCH          1
 
-/* ï¿½ï¿½ï¿½ï¿½ATK-MD0350Ä£ï¿½ï¿½ï¿½ï¿½ï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½ */
+/* ¶¨ÒåATK-MD0350Ä£¿éÆôÓÃµÄ×ÖÌå */
 #define ATK_MD0350_FONT_12              1
 #define ATK_MD0350_FONT_16              1
 #define ATK_MD0350_FONT_24              1
 #define ATK_MD0350_FONT_32              1
 
-/* Ä¬ï¿½ï¿½ï¿½ï¿½ï¿½Ã´ï¿½ï¿½ï¿½ */
+/* Ä¬ÈÏÆôÓÃ´¥Ãþ */
 #ifndef ATK_MD0350_USING_TOUCH
 #define ATK_MD0350_USING_TOUCH 1
 #endif
 
-/* Ä¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½12ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+/* Ä¬ÈÏÆôÓÃ12ºÅ×ÖÌå */
 #if ((ATK_MD0350_FONT_12 == 0) && (ATK_MD0350_FONT_16 == 0) && (ATK_MD0350_FONT_24 == 0) && (ATK_MD0350_FONT_32 == 0))
 #undef ATK_MD0350_FONT_12
 #defien ATK_MD0350_FONT_12 1
 #endif
 
-/* ï¿½ï¿½ï¿½ï¿½Í·ï¿½Ä¼ï¿½ */
+/* °üº¬Í·ÎÄ¼þ */
 #if (ATK_MD0350_USING_TOUCH != 0)
 #include "atk_md0350_touch.h"
 #endif
 
-/* ï¿½ï¿½ï¿½Å¶ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_BL_GPIO_PORT         GPIOB
-#define ATK_MD0350_BL_GPIO_PIN          GPIO_PIN_5
-#define ATK_MD0350_BL_GPIO_CLK_ENABLE() do{ __HAL_RCC_GPIOB_CLK_ENABLE(); }while(0)
+/* Òý½Å¶¨Òå */
+#define ATK_MD0350_BL_GPIO_PORT         GPIOC
+#define ATK_MD0350_BL_GPIO_PIN          GPIO_PIN_10
+#define ATK_MD0350_BL_GPIO_CLK_ENABLE() do{ __HAL_RCC_GPIOC_CLK_ENABLE(); }while(0)
 
-/* IOï¿½ï¿½ï¿½ï¿½ */
+/* IO²Ù×÷ */
 #define ATK_MD0350_BL(x)                do{ x ?                                                                                 \
                                             HAL_GPIO_WritePin(ATK_MD0350_BL_GPIO_PORT, ATK_MD0350_BL_GPIO_PIN, GPIO_PIN_SET) :  \
                                             HAL_GPIO_WritePin(ATK_MD0350_BL_GPIO_PORT, ATK_MD0350_BL_GPIO_PIN, GPIO_PIN_RESET); \
                                         }while(0)
 
-/* ATK-MD0350Ä£ï¿½ï¿½LCDÉ¨ï¿½è·½ï¿½ï¿½Ã¶ï¿½ï¿½ */
+/* ATK-MD0350Ä£¿éLCDÉ¨Ãè·½ÏòÃ¶¾Ù */
 typedef enum
 {
-    ATK_MD0350_LCD_SCAN_DIR_L2R_U2D = 0x0000,   /* ï¿½ï¿½ï¿½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ */
-    ATK_MD0350_LCD_SCAN_DIR_L2R_D2U = 0x0080,   /* ï¿½ï¿½ï¿½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½Âµï¿½ï¿½ï¿½ */
-    ATK_MD0350_LCD_SCAN_DIR_R2L_U2D = 0x0040,   /* ï¿½ï¿½ï¿½Òµï¿½ï¿½ó£¬´ï¿½ï¿½Ïµï¿½ï¿½ï¿½ */
-    ATK_MD0350_LCD_SCAN_DIR_R2L_D2U = 0x00C0,   /* ï¿½ï¿½ï¿½Òµï¿½ï¿½ó£¬´ï¿½ï¿½Âµï¿½ï¿½ï¿½ */
-    ATK_MD0350_LCD_SCAN_DIR_U2D_L2R = 0x0020,   /* ï¿½ï¿½ï¿½Ïµï¿½ï¿½Â£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-    ATK_MD0350_LCD_SCAN_DIR_U2D_R2L = 0x0060,   /* ï¿½ï¿½ï¿½Ïµï¿½ï¿½Â£ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ */
-    ATK_MD0350_LCD_SCAN_DIR_D2U_L2R = 0x00A0,   /* ï¿½ï¿½ï¿½Âµï¿½ï¿½Ï£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-    ATK_MD0350_LCD_SCAN_DIR_D2U_R2L = 0x00E0,   /* ï¿½ï¿½ï¿½Âµï¿½ï¿½Ï£ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ */
+    ATK_MD0350_LCD_SCAN_DIR_L2R_U2D = 0x0000,   /* ´Ó×óµ½ÓÒ£¬´ÓÉÏµ½ÏÂ */
+    ATK_MD0350_LCD_SCAN_DIR_L2R_D2U = 0x0080,   /* ´Ó×óµ½ÓÒ£¬´ÓÏÂµ½ÉÏ */
+    ATK_MD0350_LCD_SCAN_DIR_R2L_U2D = 0x0040,   /* ´ÓÓÒµ½×ó£¬´ÓÉÏµ½ÏÂ */
+    ATK_MD0350_LCD_SCAN_DIR_R2L_D2U = 0x00C0,   /* ´ÓÓÒµ½×ó£¬´ÓÏÂµ½ÉÏ */
+    ATK_MD0350_LCD_SCAN_DIR_U2D_L2R = 0x0020,   /* ´ÓÉÏµ½ÏÂ£¬´Ó×óµ½ÓÒ */
+    ATK_MD0350_LCD_SCAN_DIR_U2D_R2L = 0x0060,   /* ´ÓÉÏµ½ÏÂ£¬´ÓÓÒµ½×ó */
+    ATK_MD0350_LCD_SCAN_DIR_D2U_L2R = 0x00A0,   /* ´ÓÏÂµ½ÉÏ£¬´Ó×óµ½ÓÒ */
+    ATK_MD0350_LCD_SCAN_DIR_D2U_R2L = 0x00E0,   /* ´ÓÏÂµ½ÉÏ£¬´ÓÓÒµ½×ó */
 } atk_md0350_lcd_scan_dir_t;
 
-/* ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½Ã¶ï¿½ï¿½ */
+/* ATK-MD0350Ä£¿éLCDÐý×ª·½ÏòÃ¶¾Ù */
 typedef enum
 {
-    ATK_MD0350_LCD_DISP_DIR_0 = 0x00,           /* LCDË³Ê±ï¿½ï¿½ï¿½ï¿½×ª0ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ */
-    ATK_MD0350_LCD_DISP_DIR_90,                 /* LCDË³Ê±ï¿½ï¿½ï¿½ï¿½×ª90ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ */
-    ATK_MD0350_LCD_DISP_DIR_180,                /* LCDË³Ê±ï¿½ï¿½ï¿½ï¿½×ª180ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ */
-    ATK_MD0350_LCD_DISP_DIR_270,                /* LCDË³Ê±ï¿½ï¿½ï¿½ï¿½×ª270ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ */
+    ATK_MD0350_LCD_DISP_DIR_0 = 0x00,           /* LCDË³Ê±ÕëÐý×ª0¡ãÏÔÊ¾ÄÚÈÝ */
+    ATK_MD0350_LCD_DISP_DIR_90,                 /* LCDË³Ê±ÕëÐý×ª90¡ãÏÔÊ¾ÄÚÈÝ */
+    ATK_MD0350_LCD_DISP_DIR_180,                /* LCDË³Ê±ÕëÐý×ª180¡ãÏÔÊ¾ÄÚÈÝ */
+    ATK_MD0350_LCD_DISP_DIR_270,                /* LCDË³Ê±ÕëÐý×ª270¡ãÏÔÊ¾ÄÚÈÝ */
 } atk_md0350_lcd_disp_dir_t;
 
-/* ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½Ã¶ï¿½ï¿½ */
+/* ATK-MD0350Ä£¿éLCDÏÔÊ¾×ÖÌåÃ¶¾Ù */
 typedef enum
 {
 #if (ATK_MD0350_FONT_12 != 0)
-    ATK_MD0350_LCD_FONT_12,             /* 12ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+    ATK_MD0350_LCD_FONT_12,             /* 12ºÅ×ÖÌå */
 #endif
 #if (ATK_MD0350_FONT_16 != 0)
-    ATK_MD0350_LCD_FONT_16,             /* 16ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+    ATK_MD0350_LCD_FONT_16,             /* 16ºÅ×ÖÌå */
 #endif
 #if (ATK_MD0350_FONT_24 != 0)
-    ATK_MD0350_LCD_FONT_24,             /* 24ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+    ATK_MD0350_LCD_FONT_24,             /* 24ºÅ×ÖÌå */
 #endif
 #if (ATK_MD0350_FONT_32 != 0)
-    ATK_MD0350_LCD_FONT_32,             /* 32ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+    ATK_MD0350_LCD_FONT_32,             /* 32ºÅ×ÖÌå */
 #endif
 } atk_md0350_lcd_font_t;
 
-/* ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½Ä£Ê½Ã¶ï¿½ï¿½ */
+/* ATK-MD0350Ä£¿éLCDÏÔÊ¾Êý×ÖÄ£Ê½Ã¶¾Ù */
 typedef enum
 {
-    ATK_MD0350_NUM_SHOW_NOZERO = 0x00,  /* ï¿½ï¿½ï¿½Ö¸ï¿½Î»0ï¿½ï¿½ï¿½ï¿½Ê¾ */
-    ATK_MD0350_NUM_SHOW_ZERO,           /* ï¿½ï¿½ï¿½Ö¸ï¿½Î»0ï¿½ï¿½Ê¾ */
+    ATK_MD0350_NUM_SHOW_NOZERO = 0x00,  /* Êý×Ö¸ßÎ»0²»ÏÔÊ¾ */
+    ATK_MD0350_NUM_SHOW_ZERO,           /* Êý×Ö¸ßÎ»0ÏÔÊ¾ */
 } atk_md0350_num_mode_t;
 
-/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½å£¨RGB565ï¿½ï¿½ */
+/* ³£ÓÃÑÕÉ«¶¨Òå£¨RGB565£© */
 #define ATK_MD0350_WHITE        0xFFFF
 #define ATK_MD0350_BLACK        0x0000
 #define ATK_MD0350_BLUE         0x001F
@@ -125,35 +125,35 @@ typedef enum
 #define ATK_MD0350_BRRED        0XFC07
 #define ATK_MD0350_GRAY         0X8430
 
-/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_EOK          0   /* Ã»ï¿½Ð´ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_ERROR        1   /* ï¿½ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_EINVAL       2   /* ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ */
+/* ´íÎó´úÂë */
+#define ATK_MD0350_EOK          0   /* Ã»ÓÐ´íÎó */
+#define ATK_MD0350_ERROR        1   /* ´íÎó */
+#define ATK_MD0350_EINVAL       2   /* ·Ç·¨²ÎÊý */
 
 extern uint8_t tp_type;
-/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-uint8_t atk_md0350_init(void);                                                                                                                          /* ATK-MD0350Ä£ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ */
-uint16_t atk_md0350_get_lcd_width(void);                                                                                                                /* ï¿½ï¿½È¡ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ï¿½ */
-uint16_t atk_md0350_get_lcd_height(void);                                                                                                               /* ï¿½ï¿½È¡ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ß¶ï¿½ */
-void atk_md0350_backlight_on(void);                                                                                                                     /* ï¿½ï¿½ï¿½ï¿½ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ï¿½ */
-void atk_md0350_backlight_off(void);                                                                                                                    /* ï¿½Ø±ï¿½ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ï¿½ */
-void atk_md0350_display_on(void);                                                                                                                       /* ï¿½ï¿½ï¿½ï¿½ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾ */
-void atk_md0350_display_off(void);                                                                                                                      /* ï¿½Ø±ï¿½ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾ */
-uint8_t atk_md0350_set_scan_dir(atk_md0350_lcd_scan_dir_t scan_dir);                                                                                    /* ï¿½ï¿½ï¿½ï¿½ATK-MD0350Ä£ï¿½ï¿½LCDÉ¨ï¿½è·½ï¿½ï¿½ */
-uint8_t atk_md0350_set_disp_dir(atk_md0350_lcd_disp_dir_t disp_dir);                                                                                    /* ï¿½ï¿½ï¿½ï¿½ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ */
-atk_md0350_lcd_scan_dir_t atk_md0350_get_scan_dir(void);                                                                                                /* ï¿½ï¿½È¡ATK-MD0350Ä£ï¿½ï¿½LCDÉ¨ï¿½è·½ï¿½ï¿½ */
-atk_md0350_lcd_disp_dir_t atk_md0350_get_disp_dir(void);                                                                                                /* ï¿½ï¿½È¡ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ */
-void atk_md0350_fill(uint16_t xs, uint16_t ys, uint16_t xe, uint16_t ye, uint16_t color);                                                               /* ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-void atk_md0350_clear(uint16_t color);                                                                                                                  /* ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ï¿½ */
-void atk_md0350_draw_point(uint16_t x, uint16_t y, uint16_t color);                                                                                     /* ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ï¿½ */
-uint16_t atk_md0350_read_point(uint16_t x, uint16_t y);                                                                                                 /* ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ï¿½ */
-void atk_md0350_draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);                                                          /* ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ß¶ï¿½ */
-void atk_md0350_draw_rect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);                                                          /* ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½ï¿½ï¿½ï¿½Î¿ï¿½ */
-void atk_md0350_draw_circle(uint16_t x, uint16_t y, uint16_t r, uint16_t color);                                                                        /* ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ô²ï¿½Î¿ï¿½ */
-void atk_md0350_show_char(uint16_t x, uint16_t y, char ch, atk_md0350_lcd_font_t font, uint16_t color);                                                 /* ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾1ï¿½ï¿½ï¿½Ö·ï¿½ */
-void atk_md0350_show_string(uint16_t x, uint16_t y, uint16_t width, uint16_t height, char *str, atk_md0350_lcd_font_t font, uint16_t color);            /* ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾ï¿½Ö·ï¿½ï¿½ï¿½ */
-void atk_md0350_show_xnum(uint16_t x, uint16_t y, uint32_t num, uint8_t len, atk_md0350_num_mode_t mode, atk_md0350_lcd_font_t font, uint16_t color);   /* ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Ö£ï¿½ï¿½É¿ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½Î»0 */
-void atk_md0350_show_num(uint16_t x, uint16_t y, uint32_t num, uint8_t len, atk_md0350_lcd_font_t font, uint16_t color);                                /* ATK-MD0350Ä£ï¿½ï¿½LCDï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Ö£ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½Î»0 */
-void atk_md0350_show_pic(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t *pic);                                                        /* ATK-MD0350Ä£ï¿½ï¿½LCDÍ¼Æ¬ */
+/* ²Ù×÷º¯Êý */
+uint8_t atk_md0350_init(void);                                                                                                                          /* ATK-MD0350Ä£¿é³õÊ¼»¯ */
+uint16_t atk_md0350_get_lcd_width(void);                                                                                                                /* »ñÈ¡ATK-MD0350Ä£¿éLCD¿í¶È */
+uint16_t atk_md0350_get_lcd_height(void);                                                                                                               /* »ñÈ¡ATK-MD0350Ä£¿éLCD¸ß¶È */
+void atk_md0350_backlight_on(void);                                                                                                                     /* ¿ªÆôATK-MD0350Ä£¿éLCD±³¹â */
+void atk_md0350_backlight_off(void);                                                                                                                    /* ¹Ø±ÕATK-MD0350Ä£¿éLCD±³¹â */
+void atk_md0350_display_on(void);                                                                                                                       /* ¿ªÆôATK-MD0350Ä£¿éLCDÏÔÊ¾ */
+void atk_md0350_display_off(void);                                                                                                                      /* ¹Ø±ÕATK-MD0350Ä£¿éLCDÏÔÊ¾ */
+uint8_t atk_md0350_set_scan_dir(atk_md0350_lcd_scan_dir_t scan_dir);                                                                                    /* ÉèÖÃATK-MD0350Ä£¿éLCDÉ¨Ãè·½Ïò */
+uint8_t atk_md0350_set_disp_dir(atk_md0350_lcd_disp_dir_t disp_dir);                                                                                    /* ÉèÖÃATK-MD0350Ä£¿éLCDÏÔÊ¾·½Ïò */
+atk_md0350_lcd_scan_dir_t atk_md0350_get_scan_dir(void);                                                                                                /* »ñÈ¡ATK-MD0350Ä£¿éLCDÉ¨Ãè·½Ïò */
+atk_md0350_lcd_disp_dir_t atk_md0350_get_disp_dir(void);                                                                                                /* »ñÈ¡ATK-MD0350Ä£¿éLCDÏÔÊ¾·½Ïò */
+void atk_md0350_fill(uint16_t xs, uint16_t ys, uint16_t xe, uint16_t ye, uint16_t color);                                                               /* ATK-MD0350Ä£¿éLCDÇøÓòÌî³ä */
+void atk_md0350_clear(uint16_t color);                                                                                                                  /* ATK-MD0350Ä£¿éLCDÇåÆÁ */
+void atk_md0350_draw_point(uint16_t x, uint16_t y, uint16_t color);                                                                                     /* ATK-MD0350Ä£¿éLCD»­µã */
+uint16_t atk_md0350_read_point(uint16_t x, uint16_t y);                                                                                                 /* ATK-MD0350Ä£¿éLCD¶Áµã */
+void atk_md0350_draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);                                                          /* ATK-MD0350Ä£¿éLCD»­Ïß¶Î */
+void atk_md0350_draw_rect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);                                                          /* ATK-MD0350Ä£¿éLCD»­¾ØÐÎ¿ò */
+void atk_md0350_draw_circle(uint16_t x, uint16_t y, uint16_t r, uint16_t color);                                                                        /* ATK-MD0350Ä£¿éLCD»­Ô²ÐÎ¿ò */
+void atk_md0350_show_char(uint16_t x, uint16_t y, char ch, atk_md0350_lcd_font_t font, uint16_t color);                                                 /* ATK-MD0350Ä£¿éLCDÏÔÊ¾1¸ö×Ö·û */
+void atk_md0350_show_string(uint16_t x, uint16_t y, uint16_t width, uint16_t height, char *str, atk_md0350_lcd_font_t font, uint16_t color);            /* ATK-MD0350Ä£¿éLCDÏÔÊ¾×Ö·û´® */
+void atk_md0350_show_xnum(uint16_t x, uint16_t y, uint32_t num, uint8_t len, atk_md0350_num_mode_t mode, atk_md0350_lcd_font_t font, uint16_t color);   /* ATK-MD0350Ä£¿éLCDÏÔÊ¾Êý×Ö£¬¿É¿ØÖÆÏÔÊ¾¸ßÎ»0 */
+void atk_md0350_show_num(uint16_t x, uint16_t y, uint32_t num, uint8_t len, atk_md0350_lcd_font_t font, uint16_t color);                                /* ATK-MD0350Ä£¿éLCDÏÔÊ¾Êý×Ö£¬²»ÏÔÊ¾¸ßÎ»0 */
+void atk_md0350_show_pic(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t *pic);                                                        /* ATK-MD0350Ä£¿éLCDÍ¼Æ¬ */
 
 #endif

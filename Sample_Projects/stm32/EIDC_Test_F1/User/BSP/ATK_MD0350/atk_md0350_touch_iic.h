@@ -1,19 +1,19 @@
 /**
  ****************************************************************************************************
  * @file        atk_md0350_touch_iic.h
- * @author      ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½Å¶ï¿½(ALIENTEK)
+ * @author      ÕýµãÔ­×ÓÍÅ¶Ó(ALIENTEK)
  * @version     V1.0
  * @date        2022-06-21
- * @brief       ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½IICï¿½Ó¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @license     Copyright (c) 2020-2032, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¿Æ¼ï¿½ï¿½ï¿½ï¿½Þ¹ï¿½Ë¾
+ * @brief       ATK-MD0350Ä£¿é´¥ÃþIIC½Ó¿ÚÇý¶¯´úÂë
+ * @license     Copyright (c) 2020-2032, ¹ãÖÝÊÐÐÇÒíµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾
  ****************************************************************************************************
  * @attention
  *
- * Êµï¿½ï¿½Æ½Ì¨:ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ M100Z-M3ï¿½ï¿½Ð¡ÏµÍ³ï¿½ï¿½STM32F103ï¿½ï¿½
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµ:www.yuanzige.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì³:www.openedv.com
- * ï¿½ï¿½Ë¾ï¿½ï¿½Ö·:www.alientek.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:openedv.taobao.com
+ * ÊµÑéÆ½Ì¨:ÕýµãÔ­×Ó STM32F103¿ª·¢°å
+ * ÔÚÏßÊÓÆµ:www.yuanzige.com
+ * ¼¼ÊõÂÛÌ³:www.openedv.com
+ * ¹«Ë¾ÍøÖ·:www.alientek.com
+ * ¹ºÂòµØÖ·:openedv.taobao.com
  *
  ****************************************************************************************************
  */
@@ -25,17 +25,15 @@
 
 #if (ATK_MD0350_USING_TOUCH != 0)
 
-/* ï¿½ï¿½ï¿½Å¶ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_TOUCH_IIC_SCL_GPIO_PORT          GPIOB
+/* Òý½Å¶¨Òå */
+#define ATK_MD0350_TOUCH_IIC_SCL_GPIO_PORT          GPIOC
 #define ATK_MD0350_TOUCH_IIC_SCL_GPIO_PIN           GPIO_PIN_0
-#define ATK_MD0350_TOUCH_IIC_SCL_GPIO_CLK_ENABLE()  do{ __HAL_RCC_GPIOB_CLK_ENABLE(); }while(0)
-#define ATK_MD0350_TOUCH_IIC_SDA_GPIO_PORT          GPIOB
+#define ATK_MD0350_TOUCH_IIC_SCL_GPIO_CLK_ENABLE()  do{ __HAL_RCC_GPIOC_CLK_ENABLE(); }while(0)
+#define ATK_MD0350_TOUCH_IIC_SDA_GPIO_PORT          GPIOC
 #define ATK_MD0350_TOUCH_IIC_SDA_GPIO_PIN           GPIO_PIN_3
-#define ATK_MD0350_TOUCH_IIC_SDA_GPIO_CLK_ENABLE()  do{ __HAL_RCC_GPIOB_CLK_ENABLE(); \
-                                                        __HAL_RCC_AFIO_CLK_ENABLE();  \
-                                                        __HAL_AFIO_REMAP_SWJ_NOJTAG();   }while(0)
+#define ATK_MD0350_TOUCH_IIC_SDA_GPIO_CLK_ENABLE()  do{ __HAL_RCC_GPIOC_CLK_ENABLE(); }while(0)
 
-/* IOï¿½ï¿½ï¿½ï¿½ */
+/* IO²Ù×÷ */
 #define ATK_MD0350_TOUCH_IIC_SCL(x)                 do{ x ?                                                                                                         \
                                                         HAL_GPIO_WritePin(ATK_MD0350_TOUCH_IIC_SCL_GPIO_PORT, ATK_MD0350_TOUCH_IIC_SCL_GPIO_PIN, GPIO_PIN_SET) :    \
                                                         HAL_GPIO_WritePin(ATK_MD0350_TOUCH_IIC_SCL_GPIO_PORT, ATK_MD0350_TOUCH_IIC_SCL_GPIO_PIN, GPIO_PIN_RESET);   \
@@ -48,14 +46,14 @@
 
 #define ATK_MD0350_TOUCH_IIC_READ_SDA()             HAL_GPIO_ReadPin(ATK_MD0350_TOUCH_IIC_SDA_GPIO_PORT, ATK_MD0350_TOUCH_IIC_SDA_GPIO_PIN)
 
-/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_TOUCH_IIC_EOK    0   /* Ã»ï¿½Ð´ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_TOUCH_IIC_ERROR  1   /* ï¿½ï¿½ï¿½ï¿½ */
+/* ´íÎó´úÂë */
+#define ATK_MD0350_TOUCH_IIC_EOK    0   /* Ã»ÓÐ´íÎó */
+#define ATK_MD0350_TOUCH_IIC_ERROR  1   /* ´íÎó */
 
-/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-void atk_md0350_touch_iic_init(uint8_t iic_addr);                                   /* ï¿½ï¿½Ê¼ï¿½ï¿½IICï¿½Ó¿ï¿½ */
-uint8_t atk_md0350_touch_iic_write_reg(uint16_t reg, uint8_t *buf, uint8_t len);    /* Ð´ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ï¿½ */
-void atk_md0350_touch_iic_read_reg(uint16_t reg, uint8_t *buf, uint8_t len);        /* ï¿½ï¿½ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ï¿½ */
+/* ²Ù×÷º¯Êý */
+void atk_md0350_touch_iic_init(uint8_t iic_addr);                                   /* ³õÊ¼»¯IIC½Ó¿Ú */
+uint8_t atk_md0350_touch_iic_write_reg(uint16_t reg, uint8_t *buf, uint8_t len);    /* Ð´ATK-MD0350Ä£¿é´¥Ãþ¼Ä´æÆ÷ */
+void atk_md0350_touch_iic_read_reg(uint16_t reg, uint8_t *buf, uint8_t len);        /* ¶ÁATK-MD0350Ä£¿é´¥Ãþ¼Ä´æÆ÷ */
 
 #endif /* ATK_MD0350_USING_TOUCH */
 

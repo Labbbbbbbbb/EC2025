@@ -1,29 +1,24 @@
 /**
  ****************************************************************************************************
  * @file        delay.c
- * @author      ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½Å¶ï¿½(ALIENTEK)
- * @version     V1.1
- * @date        2023-02-25
- * @brief       Ê¹ï¿½ï¿½SysTickï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½Ä£Ê½ï¿½ï¿½ï¿½Ó³Ù½ï¿½ï¿½Ð¹ï¿½ï¿½ï¿½(Ö§ï¿½ï¿½ucosii)
- *              ï¿½á¹©delay_initï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ delay_usï¿½ï¿½delay_msï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½
- * @license     Copyright (c) 2022-2032, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¿Æ¼ï¿½ï¿½ï¿½ï¿½Þ¹ï¿½Ë¾
+ * @author      ÕýµãÔ­×ÓÍÅ¶Ó(ALIENTEK)
+ * @version     V1.0
+ * @date        2020-04-17
+ * @brief       Ê¹ÓÃSysTickµÄÆÕÍ¨¼ÆÊýÄ£Ê½¶ÔÑÓ³Ù½øÐÐ¹ÜÀí(Ö§³Öucosii)
+ *              Ìá¹©delay_init³õÊ¼»¯º¯Êý£¬ delay_usºÍdelay_msµÈÑÓÊ±º¯Êý
+ * @license     Copyright (c) 2020-2032, ¹ãÖÝÊÐÐÇÒíµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾
  ****************************************************************************************************
  * @attention
  *
- * Êµï¿½ï¿½Æ½Ì¨:ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ M100Z-M3ï¿½ï¿½Ð¡ÏµÍ³ï¿½ï¿½STM32F103ï¿½ï¿½
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµ:www.yuanzige.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì³:www.openedv.com
- * ï¿½ï¿½Ë¾ï¿½ï¿½Ö·:www.alientek.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:openedv.taobao.com
+ * ÊµÑéÆ½Ì¨:ÕýµãÔ­×Ó MiniSTM32 V4¿ª·¢°å
+ * ÔÚÏßÊÓÆµ:www.yuanzige.com
+ * ¼¼ÊõÂÛÌ³:www.openedv.com
+ * ¹«Ë¾ÍøÖ·:www.alientek.com
+ * ¹ºÂòµØÖ·:openedv.taobao.com
  *
- * ï¿½Þ¸ï¿½Ëµï¿½ï¿½
- * V1.0 20230206
- * ï¿½ï¿½Ò»ï¿½Î·ï¿½ï¿½ï¿½
- * V1.1 20230225
- * ï¿½Þ¸ï¿½SYS_SUPPORT_OSï¿½ï¿½ï¿½Ö´ï¿½ï¿½ï¿½, Ä¬ï¿½Ï½ï¿½Ö§ï¿½ï¿½UCOSII 2.93.01ï¿½æ±¾, ï¿½ï¿½ï¿½ï¿½OSï¿½ï¿½Î¿ï¿½Êµï¿½ï¿½
- * ï¿½Þ¸ï¿½delay_initï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½8ï¿½ï¿½Æµ,È«ï¿½ï¿½Í³Ò»Ê¹ï¿½ï¿½MCUÊ±ï¿½ï¿½
- * ï¿½Þ¸ï¿½delay_usÊ¹ï¿½ï¿½Ê±ï¿½ï¿½ÕªÈ¡ï¿½ï¿½ï¿½ï¿½Ê±, ï¿½ï¿½ï¿½ï¿½OS
- * ï¿½Þ¸ï¿½delay_msÖ±ï¿½ï¿½Ê¹ï¿½ï¿½delay_usï¿½ï¿½Ê±Êµï¿½ï¿½.
+ * ÐÞ¸ÄËµÃ÷
+ * V1.0 20211103
+ * µÚÒ»´Î·¢²¼
  *
  ****************************************************************************************************
  */
@@ -32,186 +27,282 @@
 #include "delay.h"
 
 
-static uint32_t g_fac_us = 0;       /* usï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+static uint16_t  g_fac_us = 0;      /* usÑÓÊ±±¶³ËÊý */
 
-/* ï¿½ï¿½ï¿½SYS_SUPPORT_OSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ëµï¿½ï¿½ÒªÖ§ï¿½ï¿½OSï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½UCOS) */
+/* Èç¹ûSYS_SUPPORT_OS¶¨ÒåÁË,ËµÃ÷ÒªÖ§³ÖOSÁË(²»ÏÞÓÚUCOS) */
 #if SYS_SUPPORT_OS
 
-/* ï¿½ï¿½ï¿½Ó¹ï¿½ï¿½ï¿½Í·ï¿½Ä¼ï¿½ ( ucosï¿½ï¿½Òªï¿½Ãµï¿½) */
-#include "os.h"
+/* Ìí¼Ó¹«¹²Í·ÎÄ¼þ ( ucosÐèÒªÓÃµ½) */
+#include "includes.h"
 
-/* ï¿½ï¿½ï¿½ï¿½g_fac_msï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½Ê¾msï¿½ï¿½Ê±ï¿½Ä±ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½msï¿½ï¿½, (ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½osï¿½ï¿½Ê±ï¿½ï¿½,ï¿½ï¿½Òªï¿½Ãµï¿½) */
+/* ¶¨Òåg_fac_ms±äÁ¿, ±íÊ¾msÑÓÊ±µÄ±¶³ËÊý, ´ú±íÃ¿¸ö½ÚÅÄµÄmsÊý, (½öÔÚÊ¹ÄÜosµÄÊ±ºò,ÐèÒªÓÃµ½) */
 static uint16_t g_fac_ms = 0;
 
+
 /*
- *  ï¿½ï¿½delay_us/delay_msï¿½ï¿½ÒªÖ§ï¿½ï¿½OSï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½OSï¿½ï¿½ØµÄºê¶¨ï¿½ï¿½Íºï¿½ï¿½ï¿½ï¿½ï¿½Ö§ï¿½ï¿½
- *  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½3ï¿½ï¿½ï¿½ê¶¨ï¿½ï¿½:
- *      delay_osrunning    :ï¿½ï¿½ï¿½Ú±ï¿½Ê¾OSï¿½ï¿½Ç°ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½Ô¾ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½ï¿½ï¿½Øºï¿½ï¿½ï¿½
- *      delay_ostickspersec:ï¿½ï¿½ï¿½Ú±ï¿½Ê¾OSï¿½è¶¨ï¿½ï¿½Ê±ï¿½Ó½ï¿½ï¿½ï¿½,delay_initï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½systick
- *      delay_osintnesting :ï¿½ï¿½ï¿½Ú±ï¿½Ê¾OSï¿½Ð¶ï¿½Ç¶ï¿½×¼ï¿½ï¿½ï¿½,ï¿½ï¿½Îªï¿½Ð¶ï¿½ï¿½ï¿½ï¿½æ²»ï¿½ï¿½ï¿½Ôµï¿½ï¿½ï¿½,delay_msÊ¹ï¿½Ã¸Ã²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- *  È»ï¿½ï¿½ï¿½ï¿½3ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:
- *      delay_osschedlock  :ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½OSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½
- *      delay_osschedunlock:ï¿½ï¿½ï¿½Ú½ï¿½ï¿½ï¿½OSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Â¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- *      delay_ostimedly    :ï¿½ï¿½ï¿½ï¿½OSï¿½ï¿½Ê±,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
+ *  µ±delay_us/delay_msÐèÒªÖ§³ÖOSµÄÊ±ºòÐèÒªÈý¸öÓëOSÏà¹ØµÄºê¶¨ÒåºÍº¯ÊýÀ´Ö§³Ö
+ *  Ê×ÏÈÊÇ3¸öºê¶¨Òå:
+ *      delay_osrunning    :ÓÃÓÚ±íÊ¾OSµ±Ç°ÊÇ·ñÕýÔÚÔËÐÐ,ÒÔ¾ö¶¨ÊÇ·ñ¿ÉÒÔÊ¹ÓÃÏà¹Øº¯Êý
+ *      delay_ostickspersec:ÓÃÓÚ±íÊ¾OSÉè¶¨µÄÊ±ÖÓ½ÚÅÄ,delay_init½«¸ù¾ÝÕâ¸ö²ÎÊýÀ´³õÊ¼¹þsystick
+ *      delay_osintnesting :ÓÃÓÚ±íÊ¾OSÖÐ¶ÏÇ¶Ì×¼¶±ð,ÒòÎªÖÐ¶ÏÀïÃæ²»¿ÉÒÔµ÷¶È,delay_msÊ¹ÓÃ¸Ã²ÎÊýÀ´¾ö¶¨ÈçºÎÔËÐÐ
+ *  È»ºóÊÇ3¸öº¯Êý:
+ *      delay_osschedlock  :ÓÃÓÚËø¶¨OSÈÎÎñµ÷¶È,½ûÖ¹µ÷¶È
+ *      delay_osschedunlock:ÓÃÓÚ½âËøOSÈÎÎñµ÷¶È,ÖØÐÂ¿ªÆôµ÷¶È
+ *      delay_ostimedly    :ÓÃÓÚOSÑÓÊ±,¿ÉÒÔÒýÆðÈÎÎñµ÷¶È.
  *
- *  ï¿½ï¿½ï¿½ï¿½ï¿½Ì½ï¿½ï¿½ï¿½UCOSIIï¿½ï¿½Ö§ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½OS,ï¿½ï¿½ï¿½ï¿½ï¿½Ð²Î¿ï¿½ï¿½ï¿½ï¿½ï¿½Ö²
+ *  ±¾Àý³Ì½ö×÷UCOSIIºÍUCOSIIIµÄÖ§³Ö,ÆäËûOS,Çë×ÔÐÐ²Î¿¼×ÅÒÆÖ²
  */
 
-/* Ö§ï¿½ï¿½UCOSII */
-#define delay_osrunning     OSRunning           /* OSï¿½Ç·ï¿½ï¿½ï¿½ï¿½Ð±ï¿½ï¿½,0,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½;1,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-#define delay_ostickspersec OS_TICKS_PER_SEC    /* OSÊ±ï¿½Ó½ï¿½ï¿½ï¿½,ï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½È´ï¿½ï¿½ï¿½ */
-#define delay_osintnesting  OSIntNesting        /* ï¿½Ð¶ï¿½Ç¶ï¿½×¼ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ð¶ï¿½Ç¶ï¿½×´ï¿½ï¿½ï¿½ */
+/* Ö§³ÖUCOSII */
+#ifdef  OS_CRITICAL_METHOD                      /* OS_CRITICAL_METHOD¶¨ÒåÁË,ËµÃ÷ÒªÖ§³ÖUCOSII */
+#define delay_osrunning     OSRunning           /* OSÊÇ·ñÔËÐÐ±ê¼Ç,0,²»ÔËÐÐ;1,ÔÚÔËÐÐ */
+#define delay_ostickspersec OS_TICKS_PER_SEC    /* OSÊ±ÖÓ½ÚÅÄ,¼´Ã¿Ãëµ÷¶È´ÎÊý */
+#define delay_osintnesting  OSIntNesting        /* ÖÐ¶ÏÇ¶Ì×¼¶±ð,¼´ÖÐ¶ÏÇ¶Ì×´ÎÊý */
+#endif
+
+/* Ö§³ÖUCOSIII */
+#ifdef  CPU_CFG_CRITICAL_METHOD                 /* CPU_CFG_CRITICAL_METHOD¶¨ÒåÁË,ËµÃ÷ÒªÖ§³ÖUCOSIII */
+#define delay_osrunning     OSRunning           /* OSÊÇ·ñÔËÐÐ±ê¼Ç,0,²»ÔËÐÐ;1,ÔÚÔËÐÐ */
+#define delay_ostickspersec OSCfg_TickRate_Hz   /* OSÊ±ÖÓ½ÚÅÄ,¼´Ã¿Ãëµ÷¶È´ÎÊý */
+#define delay_osintnesting  OSIntNestingCtr     /* ÖÐ¶ÏÇ¶Ì×¼¶±ð,¼´ÖÐ¶ÏÇ¶Ì×´ÎÊý */
+#endif
 
 
 /**
- * @brief     usï¿½ï¿½ï¿½ï¿½Ê±Ê±,ï¿½Ø±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½usï¿½ï¿½ï¿½Ó³ï¿½)
- * @param     ï¿½ï¿½
- * @retval    ï¿½ï¿½
+ * @brief       us¼¶ÑÓÊ±Ê±,¹Ø±ÕÈÎÎñµ÷¶È(·ÀÖ¹´ò¶Ïus¼¶ÑÓ³Ù)
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
-void delay_osschedlock(void)
+static void delay_osschedlock(void)
 {
-    OSSchedLock();                      /* UCOSIIï¿½Ä·ï¿½Ê½,ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½È£ï¿½ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½usï¿½ï¿½Ê± */
+#ifdef CPU_CFG_CRITICAL_METHOD  /* Ê¹ÓÃUCOSIII */
+    OS_ERR err;
+    OSSchedLock(&err);          /* UCOSIIIµÄ·½Ê½,½ûÖ¹µ÷¶È£¬·ÀÖ¹´ò¶ÏusÑÓÊ± */
+#else                           /* ·ñÔòUCOSII */
+    OSSchedLock();              /* UCOSIIµÄ·½Ê½,½ûÖ¹µ÷¶È£¬·ÀÖ¹´ò¶ÏusÑÓÊ± */
+#endif
 }
 
 /**
- * @brief     usï¿½ï¿½ï¿½ï¿½Ê±Ê±,ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @param     ï¿½ï¿½
- * @retval    ï¿½ï¿½
+ * @brief       us¼¶ÑÓÊ±Ê±,»Ö¸´ÈÎÎñµ÷¶È
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
-void delay_osschedunlock(void)
+static void delay_osschedunlock(void)
 {
-    OSSchedUnlock();                    /* UCOSIIï¿½Ä·ï¿½Ê½,ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ */
+#ifdef CPU_CFG_CRITICAL_METHOD  /* Ê¹ÓÃUCOSIII */
+    OS_ERR err;
+    OSSchedUnlock(&err);        /* UCOSIIIµÄ·½Ê½,»Ö¸´µ÷¶È */
+#else                           /* ·ñÔòUCOSII */
+    OSSchedUnlock();            /* UCOSIIµÄ·½Ê½,»Ö¸´µ÷¶È */
+#endif
 }
 
 /**
- * @brief     usï¿½ï¿½ï¿½ï¿½Ê±Ê±,ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @param     ticks: ï¿½ï¿½Ê±ï¿½Ä½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @retval    ï¿½ï¿½
+ * @brief       us¼¶ÑÓÊ±Ê±,»Ö¸´ÈÎÎñµ÷¶È
+ * @param       ticks: ÑÓÊ±µÄ½ÚÅÄÊý
+ * @retval      ÎÞ
  */
-void delay_ostimedly(uint32_t ticks)
+static void delay_ostimedly(uint32_t ticks)
 {
-    OSTimeDly(ticks);                               /* UCOSIIï¿½ï¿½Ê± */
+#ifdef CPU_CFG_CRITICAL_METHOD
+    OS_ERR err;
+    OSTimeDly(ticks, OS_OPT_TIME_PERIODIC, &err);   /* UCOSIIIÑÓÊ±²ÉÓÃÖÜÆÚÄ£Ê½ */
+#else
+    OSTimeDly(ticks);                               /* UCOSIIÑÓÊ± */
+#endif
 }
 
 /**
- * @brief     systickï¿½Ð¶Ï·ï¿½ï¿½ï¿½ï¿½ï¿½,Ê¹ï¿½ï¿½OSÊ±ï¿½Ãµï¿½
- * @param     ticks : ï¿½ï¿½Ê±ï¿½Ä½ï¿½ï¿½ï¿½ï¿½ï¿½  
- * @retval    ï¿½ï¿½
- */  
+ * @brief       systickÖÐ¶Ï·þÎñº¯Êý,Ê¹ÓÃOSÊ±ÓÃµ½
+ * @param       ticks: ÑÓÊ±µÄ½ÚÅÄÊý
+ * @retval      ÎÞ
+ */
 void SysTick_Handler(void)
 {
-    /* OS ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ö´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½È´ï¿½ï¿½ï¿½ */
-    if (delay_osrunning == OS_TRUE)
+    if (delay_osrunning == 1)   /* OS¿ªÊ¼ÅÜÁË,²ÅÖ´ÐÐÕý³£µÄµ÷¶È´¦Àí */
     {
-        /* ï¿½ï¿½ï¿½ï¿½ uC/OS-II ï¿½ï¿½ SysTick ï¿½Ð¶Ï·ï¿½ï¿½ï¿½ï¿½ï¿½ */
-        OS_CPU_SysTickHandler();
+        OSIntEnter();           /* ½øÈëÖÐ¶Ï */
+        OSTimeTick();           /* µ÷ÓÃucosµÄÊ±ÖÓ·þÎñ³ÌÐò */
+        OSIntExit();            /* ´¥·¢ÈÎÎñÇÐ»»ÈíÖÐ¶Ï */
     }
+
     HAL_IncTick();
 }
+
 #endif
 
 /**
- * @brief     ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Ó³Ùºï¿½ï¿½ï¿½
- * @param     sysclk: ÏµÍ³Ê±ï¿½ï¿½Æµï¿½ï¿½, ï¿½ï¿½CPUÆµï¿½ï¿½(rcc_c_ck), 168MHz
- * @retval    ï¿½ï¿½
- */  
+ * @brief       ³õÊ¼»¯ÑÓ³Ùº¯Êý
+ * @param       sysclk: ÏµÍ³Ê±ÖÓÆµÂÊ, ¼´CPUÆµÂÊ(HCLK)
+ * @retval      ÎÞ
+ */
 void delay_init(uint16_t sysclk)
 {
-#if SYS_SUPPORT_OS                                      /* ï¿½ï¿½ï¿½ï¿½ï¿½ÒªÖ§ï¿½ï¿½OS */
+#if SYS_SUPPORT_OS /* Èç¹ûÐèÒªÖ§³ÖOS. */
     uint32_t reload;
 #endif
-    g_fac_us = sysclk;                                  /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½HAL_Initï¿½ï¿½ï¿½Ñ¶ï¿½systickï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-#if SYS_SUPPORT_OS                                      /* ï¿½ï¿½ï¿½ï¿½ï¿½ÒªÖ§ï¿½ï¿½OS. */
-    reload = sysclk;                                    /* Ã¿ï¿½ï¿½ï¿½ÓµÄ¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Î»ÎªM */
-    reload *= 1000000 / delay_ostickspersec;            /* ï¿½ï¿½ï¿½ï¿½delay_ostickspersecï¿½è¶¨ï¿½ï¿½ï¿½Ê±ï¿½ï¿½,reloadÎª24Î»
-                                                         * ï¿½Ä´ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Öµ:16777216,ï¿½ï¿½168Mï¿½ï¿½,Ô¼ï¿½ï¿½0.09986sï¿½ï¿½ï¿½ï¿½
-                                                         */
-    g_fac_ms = 1000 / delay_ostickspersec;              /* ï¿½ï¿½ï¿½ï¿½OSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Ùµï¿½Î» */
-    SysTick->CTRL |= 1 << 1;                            /* ï¿½ï¿½ï¿½ï¿½SYSTICKï¿½Ð¶ï¿½ */
-    SysTick->LOAD = reload;                             /* Ã¿1/delay_ostickspersecï¿½ï¿½ï¿½Ð¶ï¿½Ò»ï¿½ï¿½ */
-    SysTick->CTRL |= 1 << 0;                            /* ï¿½ï¿½ï¿½ï¿½SYSTICK */
-#endif 
+    SysTick->CTRL = 0;                                          /* ÇåSystick×´Ì¬£¬ÒÔ±ãÏÂÒ»²½ÖØÉè£¬Èç¹ûÕâÀï¿ªÁËÖÐ¶Ï»á¹Ø±ÕÆäÖÐ¶Ï */
+    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK_DIV8);   /* SYSTICKÊ¹ÓÃÄÚºËÊ±ÖÓÔ´8·ÖÆµ,ÒòsystickµÄ¼ÆÊýÆ÷×î´óÖµÖ»ÓÐ2^24 */
+
+    g_fac_us = sysclk / 8;                                      /* ²»ÂÛÊÇ·ñÊ¹ÓÃOS,g_fac_us¶¼ÐèÒªÊ¹ÓÃ,×÷Îª1usµÄ»ù´¡Ê±»ù */
+#if SYS_SUPPORT_OS                                              /* Èç¹ûÐèÒªÖ§³ÖOS. */
+    reload = sysclk / 8;                                        /* Ã¿ÃëÖÓµÄ¼ÆÊý´ÎÊý µ¥Î»ÎªM */
+    reload *= 1000000 / delay_ostickspersec;                    /* ¸ù¾Ýdelay_ostickspersecÉè¶¨Òç³öÊ±¼ä
+                                                                 * reloadÎª24Î»¼Ä´æÆ÷,×î´óÖµ:16777216,ÔÚ9MÏÂ,Ô¼ºÏ1.86s×óÓÒ
+                                                                 */
+    g_fac_ms = 1000 / delay_ostickspersec;                      /* ´ú±íOS¿ÉÒÔÑÓÊ±µÄ×îÉÙµ¥Î» */
+    SysTick->CTRL |= 1 << 1;                                    /* ¿ªÆôSYSTICKÖÐ¶Ï */
+    SysTick->LOAD = reload;                                     /* Ã¿1/delay_ostickspersecÃëÖÐ¶ÏÒ»´Î */
+    SysTick->CTRL |= 1 << 0;                                    /* ¿ªÆôSYSTICK */
+#endif
 }
 
+#if SYS_SUPPORT_OS  /* Èç¹ûÐèÒªÖ§³ÖOS, ÓÃÒÔÏÂ´úÂë */
+
 /**
- * @brief     ï¿½ï¿½Ê±nus
- * @note      ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½Ê¹ï¿½ï¿½OS, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ÕªÈ¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½usï¿½ï¿½Ê±
- * @param     nus: Òªï¿½ï¿½Ê±ï¿½ï¿½usï¿½ï¿½
- * @note      nusÈ¡Öµï¿½ï¿½Î§: 0 ~ (2^32 / fac_us) (fac_usÒ»ï¿½ï¿½ï¿½ï¿½ï¿½ÏµÍ³ï¿½ï¿½Æµ, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
- * @retval    ï¿½ï¿½
+ * @brief       ÑÓÊ±nus
+ * @param       nus: ÒªÑÓÊ±µÄusÊý.
+ * @note        nusÈ¡Öµ·¶Î§: 0 ~ 477218588(×î´óÖµ¼´2^32 / g_fac_us @g_fac_us = 9)
+ * @retval      ÎÞ
  */
 void delay_us(uint32_t nus)
 {
     uint32_t ticks;
     uint32_t told, tnow, tcnt = 0;
-    uint32_t reload = SysTick->LOAD;        /* LOADï¿½ï¿½Öµ */
-    ticks = nus * g_fac_us;                 /* ï¿½ï¿½Òªï¿½Ä½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-    
-#if SYS_SUPPORT_OS                          /* ï¿½ï¿½ï¿½ï¿½ï¿½ÒªÖ§ï¿½ï¿½OS */
-    delay_osschedlock();                    /* ï¿½ï¿½ï¿½ï¿½ OS ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-#endif
+    uint32_t reload;
+    reload = SysTick->LOAD;     /* LOADµÄÖµ */
+    ticks = nus * g_fac_us;     /* ÐèÒªµÄ½ÚÅÄÊý */
+    delay_osschedlock();        /* ×èÖ¹OSµ÷¶È£¬·ÀÖ¹´ò¶ÏusÑÓÊ± */
+    told = SysTick->VAL;        /* ¸Õ½øÈëÊ±µÄ¼ÆÊýÆ÷Öµ */
 
-    told = SysTick->VAL;                    /* ï¿½Õ½ï¿½ï¿½ï¿½Ê±ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½Öµ */
     while (1)
     {
         tnow = SysTick->VAL;
+
         if (tnow != told)
         {
             if (tnow < told)
             {
-                tcnt += told - tnow;        /* ï¿½ï¿½ï¿½ï¿½×¢ï¿½ï¿½Ò»ï¿½ï¿½SYSTICKï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ý¼ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¿ï¿½ï¿½ï¿½ï¿½ï¿½ */
+                tcnt += told - tnow;    /* ÕâÀï×¢ÒâÒ»ÏÂSYSTICKÊÇÒ»¸öµÝ¼õµÄ¼ÆÊýÆ÷¾Í¿ÉÒÔÁË. */
             }
             else
             {
                 tcnt += reload - tnow + told;
             }
+
             told = tnow;
-            if (tcnt >= ticks) 
-            {
-                break;                      /* Ê±ï¿½ä³¬ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½Òªï¿½Ó³Ùµï¿½Ê±ï¿½ï¿½,ï¿½ï¿½ï¿½Ë³ï¿½ */
-            }
+
+            if (tcnt >= ticks) break;   /* Ê±¼ä³¬¹ý/µÈÓÚÒªÑÓ³ÙµÄÊ±¼ä,ÔòÍË³ö. */
         }
-    }
+    };
 
-#if SYS_SUPPORT_OS                          /* ï¿½ï¿½ï¿½ï¿½ï¿½ÒªÖ§ï¿½ï¿½OS */
-    delay_osschedunlock();                  /* ï¿½Ö¸ï¿½ OS ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-#endif 
-
+    delay_osschedunlock();              /* »Ö¸´OSµ÷¶È */
 }
 
 /**
- * @brief     ï¿½ï¿½Ê±nms
- * @param     nms: Òªï¿½ï¿½Ê±ï¿½ï¿½msï¿½ï¿½ (0< nms <= (2^32 / fac_us / 1000))(fac_usÒ»ï¿½ï¿½ï¿½ï¿½ï¿½ÏµÍ³ï¿½ï¿½Æµ, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
- * @retval    ï¿½ï¿½
+ * @brief       ÑÓÊ±nms
+ * @param       nms: ÒªÑÓÊ±µÄmsÊý (0< nms <= 65535)
+ * @retval      ÎÞ
  */
 void delay_ms(uint16_t nms)
 {
-    
-#if SYS_SUPPORT_OS  /* ï¿½ï¿½ï¿½ï¿½ï¿½ÒªÖ§ï¿½ï¿½OS, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½osï¿½ï¿½Ê±ï¿½ï¿½ï¿½Í·ï¿½CPU */
-    if (delay_osrunning && delay_osintnesting == 0)     /* ï¿½ï¿½ï¿½OSï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ò²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½æ²»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½) */
+    if (delay_osrunning && delay_osintnesting == 0)     /* Èç¹ûOSÒÑ¾­ÔÚÅÜÁË,²¢ÇÒ²»ÊÇÔÚÖÐ¶ÏÀïÃæ(ÖÐ¶ÏÀïÃæ²»ÄÜÈÎÎñµ÷¶È) */
     {
-        if (nms >= g_fac_ms)                            /* ï¿½ï¿½Ê±ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½OSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+        if (nms >= g_fac_ms)                            /* ÑÓÊ±µÄÊ±¼ä´óÓÚOSµÄ×îÉÙÊ±¼äÖÜÆÚ */
         {
-            delay_ostimedly(nms / g_fac_ms);            /* OSï¿½ï¿½Ê± */
+            delay_ostimedly(nms / g_fac_ms);            /* OSÑÓÊ± */
         }
 
-        nms %= g_fac_ms;                                /* OSï¿½Ñ¾ï¿½ï¿½Þ·ï¿½ï¿½á¹©ï¿½ï¿½Ã´Ð¡ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ê½ï¿½ï¿½Ê± */
+        nms %= g_fac_ms;                                /* OSÒÑ¾­ÎÞ·¨Ìá¹©ÕâÃ´Ð¡µÄÑÓÊ±ÁË,²ÉÓÃÆÕÍ¨·½Ê½ÑÓÊ± */
     }
-#endif
 
-    delay_us((uint32_t)(nms * 1000));                   /* ï¿½ï¿½Í¨ï¿½ï¿½Ê½ï¿½ï¿½Ê± */
+    delay_us((uint32_t)(nms * 1000));                   /* ÆÕÍ¨·½Ê½ÑÓÊ± */
+}
+
+#else  /* ²»Ê¹ÓÃOSÊ±, ÓÃÒÔÏÂ´úÂë */
+
+/**
+ * @brief       ÑÓÊ±nus
+ * @param       nus: ÒªÑÓÊ±µÄusÊý.
+ * @note        ×¢Òâ: nusµÄÖµ,²»Òª´óÓÚ1864135us(×î´óÖµ¼´2^24 / g_fac_us @g_fac_us = 9)
+ * @retval      ÎÞ
+ */
+void delay_us(uint32_t nus)
+{
+    uint32_t temp;
+    SysTick->LOAD = nus * g_fac_us; /* Ê±¼ä¼ÓÔØ */
+    SysTick->VAL = 0x00;            /* Çå¿Õ¼ÆÊýÆ÷ */
+    SysTick->CTRL |= 1 << 0 ;       /* ¿ªÊ¼µ¹Êý */
+
+    do
+    {
+        temp = SysTick->CTRL;
+    } while ((temp & 0x01) && !(temp & (1 << 16))); /* CTRL.ENABLEÎ»±ØÐëÎª1, ²¢µÈ´ýÊ±¼äµ½´ï */
+
+    SysTick->CTRL &= ~(1 << 0) ;    /* ¹Ø±ÕSYSTICK */
+    SysTick->VAL = 0X00;            /* Çå¿Õ¼ÆÊýÆ÷ */
 }
 
 /**
- * @brief       HALï¿½ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½Ê±
- * @note        HALï¿½ï¿½ï¿½ï¿½ï¿½Ê±Ä¬ï¿½ï¿½ï¿½ï¿½Systickï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½Ð¿ï¿½Systickï¿½ï¿½ï¿½Ð¶Ï»áµ¼ï¿½Âµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Þ·ï¿½ï¿½Ë³ï¿½
- * @param       Delay : Òªï¿½ï¿½Ê±ï¿½Äºï¿½ï¿½ï¿½ï¿½ï¿½
- * @retval      None
+ * @brief       ÑÓÊ±nms
+ * @param       nms: ÒªÑÓÊ±µÄmsÊý (0< nms <= 65535)
+ * @retval      ÎÞ
  */
+void delay_ms(uint16_t nms)
+{
+    uint32_t repeat = nms / 1000;   /*  ÕâÀïÓÃ1000,ÊÇ¿¼ÂÇµ½¿ÉÄÜÓÐ³¬ÆµÓ¦ÓÃ,
+                                     *  ±ÈÈç128MhzµÄÊ±ºò, delay_us×î´óÖ»ÄÜÑÓÊ±1048576us×óÓÒÁË
+                                     */
+    uint32_t remain = nms % 1000;
+
+    while (repeat)
+    {
+        delay_us(1000 * 1000);      /* ÀûÓÃdelay_us ÊµÏÖ 1000ms ÑÓÊ± */
+        repeat--;
+    }
+
+    if (remain)
+    {
+        delay_us(remain * 1000);    /* ÀûÓÃdelay_us, °ÑÎ²ÊýÑÓÊ±(remain ms)¸ø×öÁË */
+    }
+}
+
+/**
+  * @brief HAL¿âÄÚ²¿º¯ÊýÓÃµ½µÄÑÓÊ±
+           HAL¿âµÄÑÓÊ±Ä¬ÈÏÓÃSystick£¬Èç¹ûÎÒÃÇÃ»ÓÐ¿ªSystickµÄÖÐ¶Ï»áµ¼ÖÂµ÷ÓÃÕâ¸öÑÓÊ±ºóÎÞ·¨ÍË³ö
+  * @param Delay ÒªÑÓÊ±µÄºÁÃëÊý
+  * @retval None
+  */
 void HAL_Delay(uint32_t Delay)
 {
-     delay_ms(Delay);
+    delay_ms(Delay);
 }
+
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,47 +1,77 @@
 /**
  ****************************************************************************************************
  * @file        key.h
- * @author      ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½Å¶ï¿½(ALIENTEK)
+ * @author      ÕýµãÔ­×ÓÍÅ¶Ó(ALIENTEK)
  * @version     V1.0
- * @date        2023-04-23
- * @brief       ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @license     Copyright (c) 2020-2032, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¿Æ¼ï¿½ï¿½ï¿½ï¿½Þ¹ï¿½Ë¾
+ * @date        2020-04-19
+ * @brief       °´¼üÊäÈë Çý¶¯´úÂë
+ * @license     Copyright (c) 2020-2032, ¹ãÖÝÊÐÐÇÒíµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾
  ****************************************************************************************************
  * @attention
- * 
- * Êµï¿½ï¿½Æ½Ì¨:ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ M100Z-M3ï¿½ï¿½Ð¡ÏµÍ³ï¿½ï¿½STM32F103ï¿½ï¿½
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµ:www.yuanzige.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì³:www.openedv.com
- * ï¿½ï¿½Ë¾ï¿½ï¿½Ö·:www.alientek.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:openedv.taobao.com
- * 
+ *
+ * ÊµÑéÆ½Ì¨:ÕýµãÔ­×Ó MiniSTM32 V4¿ª·¢°å
+ * ÔÚÏßÊÓÆµ:www.yuanzige.com
+ * ¼¼ÊõÂÛÌ³:www.openedv.com
+ * ¹«Ë¾ÍøÖ·:www.alientek.com
+ * ¹ºÂòµØÖ·:openedv.taobao.com
+ *
+ * ÐÞ¸ÄËµÃ÷
+ * V1.0 20200419
+ * µÚÒ»´Î·¢²¼
+ *
  ****************************************************************************************************
  */
 
 #ifndef __KEY_H
 #define __KEY_H
 
-#include "sys.h"
+#include "stm32f1xx.h"
 
-/* ï¿½ï¿½ï¿½Å¶ï¿½ï¿½ï¿½ */
-#define WKUP_GPIO_PORT          GPIOA
-#define WKUP_GPIO_PIN           GPIO_PIN_0
-#define WKUP_GPIO_CLK_ENABLE()  do { __HAL_RCC_GPIOA_CLK_ENABLE(); } while (0)
-#define KEY0_GPIO_PORT          GPIOA
-#define KEY0_GPIO_PIN           GPIO_PIN_15
-#define KEY0_GPIO_CLK_ENABLE()  do { __HAL_RCC_GPIOA_CLK_ENABLE(); } while (0)
+/******************************************************************************************/
+/* Òý½Å ¶¨Òå */
 
-/* IOï¿½ï¿½ï¿½ï¿½ */
-#define WKUP                    ((HAL_GPIO_ReadPin(WKUP_GPIO_PORT, WKUP_GPIO_PIN) == GPIO_PIN_RESET) ? 0 : 1)
-#define KEY0                    ((HAL_GPIO_ReadPin(KEY0_GPIO_PORT, KEY0_GPIO_PIN) == GPIO_PIN_RESET) ? 0 : 1)
+#define KEY0_GPIO_PORT                  GPIOC
+#define KEY0_GPIO_PIN                   GPIO_PIN_5
+#define KEY0_GPIO_CLK_ENABLE()          do{ __HAL_RCC_GPIOC_CLK_ENABLE(); }while(0)   /* PC¿ÚÊ±ÖÓÊ¹ÄÜ */
 
-/* ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ */
-#define NONE_PRES               0   /* Ã»ï¿½Ð°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-#define WKUP_PRES               1   /* WKUPï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-#define KEY0_PRES               2   /* KEY0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+#define KEY1_GPIO_PORT                  GPIOA
+#define KEY1_GPIO_PIN                   GPIO_PIN_15
+#define KEY1_GPIO_CLK_ENABLE()          do{ __HAL_RCC_GPIOA_CLK_ENABLE(); }while(0)   /* PA¿ÚÊ±ÖÓÊ¹ÄÜ */
 
-/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-void key_init(void);            /* ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-uint8_t key_scan(uint8_t mode); /* É¨ï¿½è°´ï¿½ï¿½ */
+#define WKUP_GPIO_PORT                  GPIOA
+#define WKUP_GPIO_PIN                   GPIO_PIN_0
+#define WKUP_GPIO_CLK_ENABLE()          do{ __HAL_RCC_GPIOA_CLK_ENABLE(); }while(0)   /* PA¿ÚÊ±ÖÓÊ¹ÄÜ */
+
+/******************************************************************************************/
+
+#define KEY0        HAL_GPIO_ReadPin(KEY0_GPIO_PORT, KEY0_GPIO_PIN)     /* ¶ÁÈ¡KEY0Òý½Å */
+#define KEY1        HAL_GPIO_ReadPin(KEY1_GPIO_PORT, KEY1_GPIO_PIN)     /* ¶ÁÈ¡KEY1Òý½Å */
+#define WK_UP       HAL_GPIO_ReadPin(WKUP_GPIO_PORT, WKUP_GPIO_PIN)     /* ¶ÁÈ¡WKUPÒý½Å */
+
+
+#define KEY0_PRES    1              /* KEY0°´ÏÂ */
+#define KEY1_PRES    2              /* KEY1°´ÏÂ */
+#define WKUP_PRES    3              /* KEY_UP°´ÏÂ(¼´WK_UP) */
+
+void key_init(void);                /* °´¼ü³õÊ¼»¯º¯Êý */
+uint8_t key_scan(uint8_t mode);     /* °´¼üÉ¨Ãèº¯Êý */
 
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

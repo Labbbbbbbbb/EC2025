@@ -1,94 +1,117 @@
 /**
  ****************************************************************************************************
  * @file        key.c
- * @author      ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½Å¶ï¿½(ALIENTEK)
+ * @author      ÕıµãÔ­×ÓÍÅ¶Ó(ALIENTEK)
  * @version     V1.0
- * @date        2023-04-23
- * @brief       ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @license     Copyright (c) 2020-2032, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¿Æ¼ï¿½ï¿½ï¿½ï¿½Ş¹ï¿½Ë¾
+ * @date        2020-04-20
+ * @brief       °´¼üÊäÈë Çı¶¯´úÂë
+ * @license     Copyright (c) 2020-2032, ¹ãÖİÊĞĞÇÒíµç×Ó¿Æ¼¼ÓĞÏŞ¹«Ë¾
  ****************************************************************************************************
  * @attention
- * 
- * Êµï¿½ï¿½Æ½Ì¨:ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ M100Z-M3ï¿½ï¿½Ğ¡ÏµÍ³ï¿½ï¿½STM32F103ï¿½ï¿½
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµ:www.yuanzige.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì³:www.openedv.com
- * ï¿½ï¿½Ë¾ï¿½ï¿½Ö·:www.alientek.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:openedv.taobao.com
- * 
+ *
+ * ÊµÑéÆ½Ì¨:ÕıµãÔ­×Ó MiniSTM32 V4¿ª·¢°å
+ * ÔÚÏßÊÓÆµ:www.yuanzige.com
+ * ¼¼ÊõÂÛÌ³:www.openedv.com
+ * ¹«Ë¾ÍøÖ·:www.alientek.com
+ * ¹ºÂòµØÖ·:openedv.taobao.com
+ *
+ * ĞŞ¸ÄËµÃ÷
+ * V1.0 20200420
+ * µÚÒ»´Î·¢²¼
+ *
  ****************************************************************************************************
  */
 
 #include "key.h"
-#include "delay.h"
+#include "bsp_delay.h"
+
 
 /**
- * @brief   ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @param   ï¿½ï¿½
- * @retval  ï¿½ï¿½
+ * @brief       °´¼ü³õÊ¼»¯º¯Êı
+ * @param       ÎŞ
+ * @retval      ÎŞ
  */
 void key_init(void)
 {
-    GPIO_InitTypeDef gpio_init_struct = {0};
-    
-    /* Ê¹ï¿½ï¿½GPIOï¿½Ë¿ï¿½Ê±ï¿½ï¿½ */
-    WKUP_GPIO_CLK_ENABLE();
-    KEY0_GPIO_CLK_ENABLE();
-    
-    /* ï¿½ï¿½ï¿½ï¿½WKUPï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-    gpio_init_struct.Pin = WKUP_GPIO_PIN;
-    gpio_init_struct.Mode = GPIO_MODE_INPUT;
-    gpio_init_struct.Pull = GPIO_PULLDOWN;
-    gpio_init_struct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(WKUP_GPIO_PORT, &gpio_init_struct);
-    
-    /* ï¿½ï¿½ï¿½ï¿½KEY0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-    gpio_init_struct.Pin = KEY0_GPIO_PIN;
-    gpio_init_struct.Mode = GPIO_MODE_INPUT;
-    gpio_init_struct.Pull = GPIO_PULLDOWN;
-    gpio_init_struct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(KEY0_GPIO_PORT, &gpio_init_struct);
+    GPIO_InitTypeDef gpio_init_struct;
+    KEY0_GPIO_CLK_ENABLE();                                     /* KEY0Ê±ÖÓÊ¹ÄÜ */
+    KEY1_GPIO_CLK_ENABLE();                                     /* KEY1Ê±ÖÓÊ¹ÄÜ */
+    WKUP_GPIO_CLK_ENABLE();                                     /* WKUPÊ±ÖÓÊ¹ÄÜ */
+
+    gpio_init_struct.Pin = KEY0_GPIO_PIN;                       /* KEY0Òı½Å */
+    gpio_init_struct.Mode = GPIO_MODE_INPUT;                    /* ÊäÈë */
+    gpio_init_struct.Pull = GPIO_PULLUP;                        /* ÉÏÀ­ */
+    gpio_init_struct.Speed = GPIO_SPEED_FREQ_HIGH;              /* ¸ßËÙ */
+    HAL_GPIO_Init(KEY0_GPIO_PORT, &gpio_init_struct);           /* KEY0Òı½ÅÄ£Ê½ÉèÖÃ,ÉÏÀ­ÊäÈë */
+
+    gpio_init_struct.Pin = KEY1_GPIO_PIN;                       /* KEY1Òı½Å */
+    gpio_init_struct.Mode = GPIO_MODE_INPUT;                    /* ÊäÈë */
+    gpio_init_struct.Pull = GPIO_PULLUP;                        /* ÉÏÀ­ */
+    gpio_init_struct.Speed = GPIO_SPEED_FREQ_HIGH;              /* ¸ßËÙ */
+    HAL_GPIO_Init(KEY1_GPIO_PORT, &gpio_init_struct);           /* KEY1Òı½ÅÄ£Ê½ÉèÖÃ,ÉÏÀ­ÊäÈë */
+
+    gpio_init_struct.Pin = WKUP_GPIO_PIN;                       /* WKUPÒı½Å */
+    gpio_init_struct.Mode = GPIO_MODE_INPUT;                    /* ÊäÈë */
+    gpio_init_struct.Pull = GPIO_PULLDOWN;                      /* ÏÂÀ­ */
+    gpio_init_struct.Speed = GPIO_SPEED_FREQ_HIGH;              /* ¸ßËÙ */
+    HAL_GPIO_Init(WKUP_GPIO_PORT, &gpio_init_struct);           /* WKUPÒı½ÅÄ£Ê½ÉèÖÃ,ÏÂÀ­ÊäÈë */
+
 }
 
 /**
- * @brief   É¨ï¿½è°´ï¿½ï¿½
- * @note    ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½WKUP > KEY0
- * @param   mode: É¨ï¿½ï¿½Ä£Ê½
- * @arg     0: ï¿½ï¿½Ö§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @arg     1: Ö§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @retval  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
- * @arg     NONE_PRES: Ã»ï¿½Ğ°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @arg     WKUP_PRES: WKUPï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @arg     KEY0_PRES: KEY0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @brief       °´¼üÉ¨Ãèº¯Êı
+ * @note        ¸Ãº¯ÊıÓĞÏìÓ¦ÓÅÏÈ¼¶(Í¬Ê±°´ÏÂ¶à¸ö°´¼ü): WK_UP > KEY1 > KEY0!!
+ * @param       mode:0 / 1, ¾ßÌåº¬ÒåÈçÏÂ:
+ *   @arg       0,  ²»Ö§³ÖÁ¬Ğø°´(µ±°´¼ü°´ÏÂ²»·ÅÊ±, Ö»ÓĞµÚÒ»´Îµ÷ÓÃ»á·µ»Ø¼üÖµ,
+ *                  ±ØĞëËÉ¿ªÒÔºó, ÔÙ´Î°´ÏÂ²Å»á·µ»ØÆäËû¼üÖµ)
+ *   @arg       1,  Ö§³ÖÁ¬Ğø°´(µ±°´¼ü°´ÏÂ²»·ÅÊ±, Ã¿´Îµ÷ÓÃ¸Ãº¯Êı¶¼»á·µ»Ø¼üÖµ)
+ * @retval      ¼üÖµ, ¶¨ÒåÈçÏÂ:
+ *              KEY0_PRES, 1, KEY0°´ÏÂ
+ *              KEY1_PRES, 2, KEY1°´ÏÂ
+ *              WKUP_PRES, 3, WKUP°´ÏÂ
  */
 uint8_t key_scan(uint8_t mode)
 {
-    static uint8_t key_release = 1;
-    uint8_t key_value = NONE_PRES;
-    
-    if (mode != 0)
+    static uint8_t key_up = 1;  /* °´¼ü°´ËÉ¿ª±êÖ¾ */
+    uint8_t keyval = 0;
+
+    if (mode) key_up = 1;       /* Ö§³ÖÁ¬°´ */
+
+    if (key_up && (KEY0 == 0 || KEY1 == 0 || WK_UP == 1))  /* °´¼üËÉ¿ª±êÖ¾Îª1, ÇÒÓĞÈÎÒâÒ»¸ö°´¼ü°´ÏÂÁË */
     {
-        key_release = 1;
+        delay_ms(10);           /* È¥¶¶¶¯ */
+        key_up = 0;
+
+        if (KEY0 == 0)  keyval = KEY0_PRES;
+
+        if (KEY1 == 0)  keyval = KEY1_PRES;
+
+        if (WK_UP == 1) keyval = WKUP_PRES;
     }
-    
-    if ((key_release == 1) && ((WKUP == 1) || (KEY0 == 1)))
+    else if (KEY0 == 1 && KEY1 == 1 && WK_UP == 0) /* Ã»ÓĞÈÎºÎ°´¼ü°´ÏÂ, ±ê¼Ç°´¼üËÉ¿ª */
     {
-        delay_ms(10);
-        key_release = 0;
-        
-        if (KEY0 == 1)
-        {
-            key_value = KEY0_PRES;
-        }
-        
-        if (WKUP == 1)
-        {
-            key_value = WKUP_PRES;
-        }
+        key_up = 1;
     }
-    else if ((WKUP == 0) && (KEY0 == 0))
-    {
-        key_release = 1;
-    }
-    
-    return key_value;
+
+    return keyval;              /* ·µ»Ø¼üÖµ */
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

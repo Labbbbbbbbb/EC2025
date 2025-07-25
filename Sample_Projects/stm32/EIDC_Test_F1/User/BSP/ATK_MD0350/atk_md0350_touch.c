@@ -1,19 +1,19 @@
 /**
  ****************************************************************************************************
  * @file        atk_md0350_touch.c
- * @author      ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½Å¶ï¿½(ALIENTEK)
+ * @author      ÕýµãÔ­×ÓÍÅ¶Ó(ALIENTEK)
  * @version     V1.0
  * @date        2022-06-21
- * @brief       ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @license     Copyright (c) 2020-2032, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¿Æ¼ï¿½ï¿½ï¿½ï¿½Þ¹ï¿½Ë¾
+ * @brief       ATK-MD0350Ä£¿é´¥ÃþÇý¶¯´úÂë
+ * @license     Copyright (c) 2020-2032, ¹ãÖÝÊÐÐÇÒíµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾
  ****************************************************************************************************
  * @attention
  *
- * Êµï¿½ï¿½Æ½Ì¨:ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ M100Z-M3ï¿½ï¿½Ð¡ÏµÍ³ï¿½ï¿½STM32F103ï¿½ï¿½
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµ:www.yuanzige.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì³:www.openedv.com
- * ï¿½ï¿½Ë¾ï¿½ï¿½Ö·:www.alientek.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:openedv.taobao.com
+ * ÊµÑéÆ½Ì¨:ÕýµãÔ­×Ó MiniSTM32 V4¿ª·¢°å
+ * ÔÚÏßÊÓÆµ:www.yuanzige.com
+ * ¼¼ÊõÂÛÌ³:www.openedv.com
+ * ¹«Ë¾ÍøÖ·:www.alientek.com
+ * ¹ºÂòµØÖ·:openedv.taobao.com
  *
  ****************************************************************************************************
  */
@@ -22,47 +22,45 @@
 
 #if (ATK_MD0350_USING_TOUCH != 0)
 
-#include "./BSP/ATK_MD0350/atk_md0350_touch_spi.h"
-#include "./BSP/ATK_MD0350/atk_md0350_touch_iic.h"
+#include "atk_md0350_touch_spi.h"
+#include "atk_md0350_touch_iic.h"
 #include <stdlib.h>
-#include "./SYSTEM/delay/delay.h"
+#include "bsp_delay.h"
 #include <string.h>
+/*****************************************µç×èÆÁ**********************************************/
 
-
-/*****************************************ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½**********************************************/
-
-/* ï¿½ï¿½È¡X/Yï¿½ï¿½ï¿½ï¿½ADCÖµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+/* »ñÈ¡X/Y×ø±êADCÖµµÄÃüÁî */
 #define ATK_MD0350_TOUCH_CMD_X  0xD0
 #define ATK_MD0350_TOUCH_CMD_Y  0x90
 
-/* ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½Ý½á¹¹ï¿½ï¿½ */
+/* ATK-MD0350Ä£¿é´¥Ãþ×´Ì¬Êý¾Ý½á¹¹Ìå */
 static struct
 {
     struct
     {
         float x;
         float y;
-    } fac;          /* Ð£×¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+    } fac;          /* Ð£×¼±ÈÀýÒò×Ó */
     struct
     {
         uint16_t x;
         uint16_t y;
-    } center;       /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ADCÖµ */
+    } center;       /* ÖÐÐÄ×ø±êµÄADCÖµ */
 } g_atk_md0350_touch_sta = {0};
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½Ó²ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿é´¥ÃþÓ²¼þ³õÊ¼»¯
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 static void atk_md0350_rtp_touch_hw_init(void)
 {
     GPIO_InitTypeDef gpio_init_struct = {0};
     
-    /* Ê¹ï¿½ï¿½Ê±ï¿½ï¿½ */
+    /* Ê¹ÄÜÊ±ÖÓ */
     ATK_MD0350_TOUCH_PEN_GPIO_CLK_ENABLE();
     
-    /* ï¿½ï¿½Ê¼ï¿½ï¿½PENï¿½ï¿½ï¿½ï¿½ */
+    /* ³õÊ¼»¯PENÒý½Å */
     gpio_init_struct.Pin    = ATK_MD0350_TOUCH_PEN_GPIO_PIN;
     gpio_init_struct.Mode   = GPIO_MODE_INPUT;
     gpio_init_struct.Pull   = GPIO_PULLUP;
@@ -71,13 +69,13 @@ static void atk_md0350_rtp_touch_hw_init(void)
 }
 
 /**
- * @brief       ï¿½ï¿½È¡ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½ï¿½ï¿½X/Yï¿½ï¿½ADCÖµ
- * @note        ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ATK_MD0350_TOUCH_READ_TIMESï¿½Î£ï¿½
- *              ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡Öµï¿½ï¿½ATK_MD0350_TOUCH_READ_DISCARDï¿½ï¿½ï¿½ï¿½
- *              ï¿½ï¿½ó·µ»ï¿½Ê£ï¿½ï¿½Ä¾ï¿½Öµ
- * @param       cmd: ATK_MD0350_TOUCH_CMD_X: ï¿½ï¿½È¡Xï¿½ï¿½ï¿½ADCÖµï¿½ï¿½LCDï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½×ªï¿½ï¿½
- *                   ATK_MD0350_TOUCH_CMD_Y: ï¿½ï¿½È¡Yï¿½ï¿½ï¿½ADCÖµï¿½ï¿½LCDï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½×ªï¿½ï¿½
- * @retval      ï¿½ï¿½È¡ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ï¿½ADCÖµ
+ * @brief       »ñÈ¡ATK-MD0350Ä£¿é´¥ÃþµÄX/YÖáADCÖµ
+ * @note        Á¬Ðø¶ÁÈ¡ATK_MD0350_TOUCH_READ_TIMES´Î£¬
+ *              ²¢¶ªÆú×î´ó×îÐ¡Öµ¸÷ATK_MD0350_TOUCH_READ_DISCARD¸ö£¬
+ *              ×îºó·µ»ØÊ£ÓàµÄ¾ùÖµ
+ * @param       cmd: ATK_MD0350_TOUCH_CMD_X: »ñÈ¡XÖáµÄADCÖµ£¨LCDÏÔÊ¾ÄÚÈÝÎ´Ðý×ª£©
+ *                   ATK_MD0350_TOUCH_CMD_Y: »ñÈ¡YÖáµÄADCÖµ£¨LCDÏÔÊ¾ÄÚÈÝÎ´Ðý×ª£©
+ * @retval      »ñÈ¡µ½µÄ´¥ÃþADCÖµ
  */
 static uint16_t atk_md0350_touch_get_adc(uint8_t cmd)
 {
@@ -114,12 +112,12 @@ static uint16_t atk_md0350_touch_get_adc(uint8_t cmd)
 }
 
 /**
- * @brief       ï¿½ï¿½È¡ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½ï¿½ï¿½X/Yï¿½ï¿½ADCÖµ
- * @note        ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½Î£ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½Î¶ï¿½È¡ï¿½Ä²ï¿½ÖµÐ¡ï¿½ï¿½ATK_MD0350_TOUCH_READ_RANGEï¿½ï¿½
- *              ï¿½ó·µ»Ø¾ï¿½Öµ
- * @param       cmd: ATK_MD0350_TOUCH_CMD_X: ï¿½ï¿½È¡Xï¿½ï¿½ï¿½ADCÖµï¿½ï¿½LCDï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½×ªï¿½ï¿½
- *                   ATK_MD0350_TOUCH_CMD_Y: ï¿½ï¿½È¡Yï¿½ï¿½ï¿½ADCÖµï¿½ï¿½LCDï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½×ªï¿½ï¿½
- * @retval      ï¿½ï¿½È¡ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ï¿½ADCÖµ
+ * @brief       »ñÈ¡ATK-MD0350Ä£¿é´¥ÃþµÄX/YÖáADCÖµ
+ * @note        Á¬Ðø¶ÁÈ¡Á½´Î£¬Ö±ÖÁÁ½´Î¶ÁÈ¡µÄ²åÖµÐ¡ÓÚATK_MD0350_TOUCH_READ_RANGE£¬
+ *              ºó·µ»Ø¾ùÖµ
+ * @param       cmd: ATK_MD0350_TOUCH_CMD_X: »ñÈ¡XÖáµÄADCÖµ£¨LCDÏÔÊ¾ÄÚÈÝÎ´Ðý×ª£©
+ *                   ATK_MD0350_TOUCH_CMD_Y: »ñÈ¡YÖáµÄADCÖµ£¨LCDÏÔÊ¾ÄÚÈÝÎ´Ðý×ª£©
+ * @retval      »ñÈ¡µ½µÄ´¥ÃþADCÖµ
  */
 static uint16_t atk_md0350_touch_get_adc2(uint8_t cmd)
 {
@@ -144,11 +142,11 @@ static uint16_t atk_md0350_touch_get_adc2(uint8_t cmd)
 }
 
 /**
- * @brief       ï¿½æ»­ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½Ð£×¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @param       x    : ï¿½ï¿½ï¿½ï¿½Ð£×¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½
- *              y    : ï¿½ï¿½ï¿½ï¿½Ð£×¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Yï¿½ï¿½ï¿½ï¿½
- *              color: ï¿½ï¿½ï¿½ï¿½Ð£×¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«
- * @retval      ï¿½ï¿½
+ * @brief       »æ»­ATK-MD0350Ä£¿é´¥ÃþÐ£×¼´¥Ãþµã
+ * @param       x    : ´ý»­Ð£×¼´¥ÃþµãµÄX×ø±ê
+ *              y    : ´ý»­Ð£×¼´¥ÃþµãµÄY×ø±ê
+ *              color: ´ý»­Ð£×¼´¥ÃþµãµÄÑÕÉ«
+ * @retval      ÎÞ
  */
 static void atk_md0350_touch_draw_touch_point(uint16_t x, uint16_t y, uint16_t color)
 {
@@ -162,9 +160,9 @@ static void atk_md0350_touch_draw_touch_point(uint16_t x, uint16_t y, uint16_t c
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½Ð£×¼
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿é´¥ÃþÐ£×¼
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 static void atk_md0350_touch_calibration(void)
 {
@@ -278,12 +276,12 @@ static void atk_md0350_touch_calibration(void)
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½É¨ï¿½ï¿½
- * @param       x: É¨ï¿½èµ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½
- *              y: É¨ï¿½èµ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Yï¿½ï¿½ï¿½ï¿½
- * @retval      ATK_MD0350_TOUCH_EOK  : É¨ï¿½èµ½ï¿½ï¿½Ð§ï¿½Ä´ï¿½ï¿½ï¿½
- *              ATK_MD0350_TOUCH_ERROR: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§
- *              ATK_MD0350_TOUCH_EMPTY: Î´É¨ï¿½èµ½ï¿½ï¿½Ð§ï¿½Ä´ï¿½ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿é´¥ÃþÉ¨Ãè
+ * @param       x: É¨Ãèµ½´¥ÃþµÄX×ø±ê
+ *              y: É¨Ãèµ½´¥ÃþµÄY×ø±ê
+ * @retval      ATK_MD0350_TOUCH_EOK  : É¨Ãèµ½ÓÐÐ§µÄ´¥Ãþ
+ *              ATK_MD0350_TOUCH_ERROR: ´¥Ãþ×ø±êÎÞÐ§
+ *              ATK_MD0350_TOUCH_EMPTY: Î´É¨Ãèµ½ÓÐÐ§µÄ´¥Ãþ
  */
 uint8_t atk_md0350_rtp_touch_scan(uint16_t *x, uint16_t *y)
 {
@@ -341,28 +339,28 @@ uint8_t atk_md0350_rtp_touch_scan(uint16_t *x, uint16_t *y)
     return ATK_MD0350_TOUCH_EMPTY;
 }
 
-/*****************************************ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½**********************************************/
-/* ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½ï¿½ï¿½PID */
+/*****************************************µçÈÝÆÁ**********************************************/
+/* ATK-MD0350Ä£¿é´¥ÃþµÄPID */
 #define ATK_MD0350_TOUCH_PID                "1158"
 
-/* ATK-MD0350Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+/* ATK-MD0350Ä£¿é×î´ó´¥ÃþµãÊýÁ¿ */
 #define ATK_MD0350_TOUCH_TP_MAX             5
 
-/* ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½ï¿½ï¿½ï¿½Ö¼Ä´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_TOUCH_REG_CTRL           0x8040  /* ï¿½ï¿½ï¿½Æ¼Ä´ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_TOUCH_REG_PID            0x8140  /* PIDï¿½Ä´ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_TOUCH_REG_TPINFO         0x814E  /* ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½Ä´ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_TOUCH_REG_TP1            0x8150  /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1ï¿½ï¿½ï¿½Ý¼Ä´ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_TOUCH_REG_TP2            0x8158  /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½2ï¿½ï¿½ï¿½Ý¼Ä´ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_TOUCH_REG_TP3            0x8160  /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½3ï¿½ï¿½ï¿½Ý¼Ä´ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_TOUCH_REG_TP4            0x8168  /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½4ï¿½ï¿½ï¿½Ý¼Ä´ï¿½ï¿½ï¿½ */
-#define ATK_MD0350_TOUCH_REG_TP5            0x8170  /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½5ï¿½ï¿½ï¿½Ý¼Ä´ï¿½ï¿½ï¿½ */
+/* ATK-MD0350Ä£¿é´¥Ãþ²¿·Ö¼Ä´æÆ÷¶¨Òå */
+#define ATK_MD0350_TOUCH_REG_CTRL           0x8040  /* ¿ØÖÆ¼Ä´æÆ÷ */
+#define ATK_MD0350_TOUCH_REG_PID            0x8140  /* PID¼Ä´æÆ÷ */
+#define ATK_MD0350_TOUCH_REG_TPINFO         0x814E  /* ´¥Ãþ×´Ì¬¼Ä´æÆ÷ */
+#define ATK_MD0350_TOUCH_REG_TP1            0x8150  /* ´¥Ãþµã1Êý¾Ý¼Ä´æÆ÷ */
+#define ATK_MD0350_TOUCH_REG_TP2            0x8158  /* ´¥Ãþµã2Êý¾Ý¼Ä´æÆ÷ */
+#define ATK_MD0350_TOUCH_REG_TP3            0x8160  /* ´¥Ãþµã3Êý¾Ý¼Ä´æÆ÷ */
+#define ATK_MD0350_TOUCH_REG_TP4            0x8168  /* ´¥Ãþµã4Êý¾Ý¼Ä´æÆ÷ */
+#define ATK_MD0350_TOUCH_REG_TP5            0x8170  /* ´¥Ãþµã5Êý¾Ý¼Ä´æÆ÷ */
 
-/* ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+/* ´¥Ãþ×´Ì¬¼Ä´æÆ÷ÑÚÂë */
 #define ATK_MD0350_TOUCH_TPINFO_MASK_STA    0x80
 #define ATK_MD0350_TOUCH_TPINFO_MASK_CNT    0x0F
 
-/* ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¼Ä´ï¿½ï¿½ï¿½ */
+/* ATK-MD0350Ä£¿é´¥ÃþµãÊý¾Ý¼Ä´æÆ÷ */
 static const uint16_t g_atk_md0350_touch_tp_reg[ATK_MD0350_TOUCH_TP_MAX] = {
     ATK_MD0350_TOUCH_REG_TP1,
     ATK_MD0350_TOUCH_REG_TP2,
@@ -372,26 +370,26 @@ static const uint16_t g_atk_md0350_touch_tp_reg[ATK_MD0350_TOUCH_TP_MAX] = {
 };
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½Ó²ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿é´¥ÃþÓ²¼þ³õÊ¼»¯
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 static void atk_md0350_ctp_touch_hw_init(void)
 {
     GPIO_InitTypeDef gpio_init_struct = {0};
     
-    /* Ê¹ï¿½ï¿½Ê±ï¿½ï¿½ */
+    /* Ê¹ÄÜÊ±ÖÓ */
     ATK_MD0350_TOUCH_PEN_GPIO_CLK_ENABLE();
     ATK_MD0350_TOUCH_TCS_GPIO_CLK_ENABLE();
     
-    /* ï¿½ï¿½Ê¼ï¿½ï¿½PENï¿½ï¿½ï¿½ï¿½ */
+    /* ³õÊ¼»¯PENÒý½Å */
     gpio_init_struct.Pin    = ATK_MD0350_TOUCH_PEN_GPIO_PIN;
     gpio_init_struct.Mode   = GPIO_MODE_INPUT;
     gpio_init_struct.Pull   = GPIO_PULLUP;
     gpio_init_struct.Speed  = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(ATK_MD0350_TOUCH_PEN_GPIO_PORT, &gpio_init_struct);
     
-    /* ï¿½ï¿½Ê¼ï¿½ï¿½TCSï¿½ï¿½ï¿½ï¿½ */
+    /* ³õÊ¼»¯TCSÒý½Å */
     gpio_init_struct.Pin    = ATK_MD0350_TOUCH_TCS_GPIO_PIN;
     gpio_init_struct.Mode   = GPIO_MODE_OUTPUT_PP;
     gpio_init_struct.Pull   = GPIO_PULLUP;
@@ -400,15 +398,15 @@ static void atk_md0350_ctp_touch_hw_init(void)
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½Ó²ï¿½ï¿½ï¿½ï¿½Î»
- * @param       addr: ï¿½ï¿½Î»ï¿½ï¿½Ê¹ï¿½Ãµï¿½IICÍ¨Ñ¶ï¿½ï¿½Ö·
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿é´¥ÃþÓ²¼þ¸´Î»
+ * @param       addr: ¸´Î»ºóÊ¹ÓÃµÄIICÍ¨Ñ¶µØÖ·
+ * @retval      ÎÞ
  */
 static void atk_md0350_touch_hw_reset(atk_md0350_touch_iic_addr_t addr)
 {
     GPIO_InitTypeDef gpio_init_struct = {0};
     
-    /* ï¿½ï¿½ï¿½ï¿½PENï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ */
+    /* ÅäÖÃPENÒý½ÅÎªÊä³ö */
     gpio_init_struct.Pin    = ATK_MD0350_TOUCH_PEN_GPIO_PIN;
     gpio_init_struct.Mode   = GPIO_MODE_OUTPUT_PP;
     gpio_init_struct.Pull   = GPIO_PULLUP;
@@ -442,7 +440,7 @@ static void atk_md0350_touch_hw_reset(atk_md0350_touch_iic_addr_t addr)
         }
     }
     
-    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PENï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ */
+    /* ÖØÐÂÅäÖÃPENÒý½ÅÎªÊäÈë */
     gpio_init_struct.Pin    = ATK_MD0350_TOUCH_PEN_GPIO_PIN;
     gpio_init_struct.Mode   = GPIO_MODE_INPUT;
     gpio_init_struct.Pull   = GPIO_NOPULL;
@@ -451,9 +449,9 @@ static void atk_md0350_touch_hw_reset(atk_md0350_touch_iic_addr_t addr)
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿é´¥ÃþÈí¼þ¸´Î»
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 static void atk_md0350_touch_sw_reset(void)
 {
@@ -468,9 +466,9 @@ static void atk_md0350_touch_sw_reset(void)
 }
 
 /**
- * @brief       ï¿½ï¿½È¡ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½ï¿½ï¿½PID
- * @param       pid: ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½PIDï¿½ï¿½ASCIIï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       »ñÈ¡ATK-MD0350Ä£¿é´¥ÃþµÄPID
+ * @param       pid: »ñÈ¡µ½µÄPID£¨ASCII£©
+ * @retval      ÎÞ
  */
 static void atk_md0350_touch_get_pid(char *pid)
 {
@@ -479,12 +477,12 @@ static void atk_md0350_touch_get_pid(char *pid)
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½É¨ï¿½ï¿½
- * @note        ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½10ms
- * @param       point: É¨ï¿½èµ½ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
- *              cnt  : ï¿½ï¿½ÒªÉ¨ï¿½ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1~ATK_MD0350_TOUCH_TP_MAXï¿½ï¿½
- * @retval      0   : Ã»ï¿½ï¿½É¨ï¿½èµ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- *              ï¿½ï¿½ï¿½ï¿½: Êµï¿½Ê»ï¿½È¡ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿é´¥ÃþÉ¨Ãè
+ * @note        Á¬Ðøµ÷ÓÃ¼ä¸ôÐè´óÓÚ10ms
+ * @param       point: É¨Ãèµ½µÄ´¥ÃþµãÐÅÏ¢
+ *              cnt  : ÐèÒªÉ¨ÃèµÄ´¥ÃþµãÊýÁ¿£¨1~ATK_MD0350_TOUCH_TP_MAX£©
+ * @retval      0   : Ã»ÓÐÉ¨Ãèµ½´¥Ãþµã
+ *              ÆäËû: Êµ¼Ê»ñÈ¡µ½µÄ´¥ÃþµãÐÅÏ¢ÊýÁ¿
  */
 uint8_t atk_md0350_ctp_touch_scan(atk_md0350_touch_point_t *point, uint8_t cnt)
 {
@@ -566,9 +564,9 @@ uint8_t atk_md0350_ctp_touch_scan(atk_md0350_touch_point_t *point, uint8_t cnt)
 /******************************************************************************************/
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
- * @param       ï¿½ï¿½
- * @retval      0:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿é´¥Ãþ³õÊ¼»¯
+ * @param       ÎÞ
+ * @retval      0:µç×èÆÁ£»1:µçÈÝÆÁ
  */
 uint8_t atk_md0350_touch_init(void)
 {
@@ -580,16 +578,16 @@ uint8_t atk_md0350_touch_init(void)
     delay_ms(100);
     atk_md0350_touch_get_pid(pid);
 
-    if (strcmp(pid, ATK_MD0350_TOUCH_PID) != 0)     /* ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½Ä·ï¿½1158,ï¿½Ã´ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½è´¥ï¿½ï¿½ï¿½ï¿½ */
+    if (strcmp(pid, ATK_MD0350_TOUCH_PID) != 0)     /* Èô¶ÁÈ¡µ½µÄ·Ç1158,¸Ã´¥ÃþÆÁÎªµç×è´¥ÃþÆÁ */
     {
         atk_md0350_rtp_touch_hw_init();
         atk_md0350_touch_spi_init();
         atk_md0350_touch_calibration();
-        return 0;   /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+        return 0;   /* µç×èÆÁ */
     }
     atk_md0350_touch_sw_reset();
 
-    return 1;       /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+    return 1;       /* µçÈÝÆÁ */
 }
 
 

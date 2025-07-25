@@ -1,32 +1,32 @@
 /**
  ****************************************************************************************************
  * @file        atk_md0350_touch_spi.c
- * @author      ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½Å¶ï¿½(ALIENTEK)
+ * @author      ÕýµãÔ­×ÓÍÅ¶Ó(ALIENTEK)
  * @version     V1.0
  * @date        2022-06-21
- * @brief       ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½SPIï¿½Ó¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @license     Copyright (c) 2020-2032, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¿Æ¼ï¿½ï¿½ï¿½ï¿½Þ¹ï¿½Ë¾
+ * @brief       ATK-MD0350Ä£¿é´¥ÃþSPI½Ó¿ÚÇý¶¯´úÂë
+ * @license     Copyright (c) 2020-2032, ¹ãÖÝÊÐÐÇÒíµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾
  ****************************************************************************************************
  * @attention
  *
- * Êµï¿½ï¿½Æ½Ì¨:ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ M100Z-M3ï¿½ï¿½Ð¡ÏµÍ³ï¿½ï¿½STM32F103ï¿½ï¿½
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµ:www.yuanzige.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì³:www.openedv.com
- * ï¿½ï¿½Ë¾ï¿½ï¿½Ö·:www.alientek.com
- * ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:openedv.taobao.com
+ * ÊµÑéÆ½Ì¨:ÕýµãÔ­×Ó MiniSTM32 V4¿ª·¢°å
+ * ÔÚÏßÊÓÆµ:www.yuanzige.com
+ * ¼¼ÊõÂÛÌ³:www.openedv.com
+ * ¹«Ë¾ÍøÖ·:www.alientek.com
+ * ¹ºÂòµØÖ·:openedv.taobao.com
  *
  ****************************************************************************************************
  */
 
 #include "atk_md0350_touch_spi.h"
-#include "delay.h"
+#include "bsp_delay.h"
 
 #if (ATK_MD0350_USING_TOUCH != 0)
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½SPIï¿½Ó¿ï¿½Ð´ï¿½ï¿½ï¿½ï¿½
- * @param       ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿é´¥ÃþSPI½Ó¿ÚÐ´Êý¾Ý
+ * @param       ´ýÐ´ÈëµÄÊý¾Ý
+ * @retval      ÎÞ
  */
 static void atk_md0350_touch_spi_write(uint8_t dat)
 {
@@ -51,42 +51,42 @@ static void atk_md0350_touch_spi_write(uint8_t dat)
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½SPIï¿½Ó¿Ú³ï¿½Ê¼ï¿½ï¿½
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿é´¥ÃþSPI½Ó¿Ú³õÊ¼»¯
+ * @param       ÎÞ
+ * @retval      ÎÞ
  */
 void atk_md0350_touch_spi_init(void)
 {
     GPIO_InitTypeDef gpio_init_struct = {0};
     
-    /* Ê¹ï¿½ï¿½Ê±ï¿½ï¿½ */
+    /* Ê¹ÄÜÊ±ÖÓ */
     ATK_MD0350_TOUCH_SPI_MI_GPIO_CLK_ENABLE();
     ATK_MD0350_TOUCH_SPI_MO_GPIO_CLK_ENABLE();
     ATK_MD0350_TOUCH_SPI_TCS_GPIO_CLK_ENABLE();
     ATK_MD0350_TOUCH_SPI_CLK_GPIO_CLK_ENABLE();
     
-    /* ï¿½ï¿½Ê¼ï¿½ï¿½MIï¿½ï¿½ï¿½ï¿½ */
+    /* ³õÊ¼»¯MIÒý½Å */
     gpio_init_struct.Pin    = ATK_MD0350_TOUCH_SPI_MI_GPIO_PIN;
     gpio_init_struct.Mode   = GPIO_MODE_INPUT;
     gpio_init_struct.Pull   = GPIO_PULLUP;
     gpio_init_struct.Speed  = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(ATK_MD0350_TOUCH_SPI_MI_GPIO_PORT, &gpio_init_struct);
     
-    /* ï¿½ï¿½Ê¼ï¿½ï¿½MOï¿½ï¿½ï¿½ï¿½ */
+    /* ³õÊ¼»¯MOÒý½Å */
     gpio_init_struct.Pin    = ATK_MD0350_TOUCH_SPI_MO_GPIO_PIN;
     gpio_init_struct.Mode   = GPIO_MODE_OUTPUT_PP;
     gpio_init_struct.Pull   = GPIO_PULLUP;
     gpio_init_struct.Speed  = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(ATK_MD0350_TOUCH_SPI_MO_GPIO_PORT, &gpio_init_struct);
     
-    /* ï¿½ï¿½Ê¼ï¿½ï¿½TCSï¿½ï¿½ï¿½ï¿½ */
+    /* ³õÊ¼»¯TCSÒý½Å */
     gpio_init_struct.Pin    = ATK_MD0350_TOUCH_SPI_TCS_GPIO_PIN;
     gpio_init_struct.Mode   = GPIO_MODE_OUTPUT_PP;
     gpio_init_struct.Pull   = GPIO_PULLUP;
     gpio_init_struct.Speed  = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(ATK_MD0350_TOUCH_SPI_TCS_GPIO_PORT, &gpio_init_struct);
     
-    /* ï¿½ï¿½Ê¼ï¿½ï¿½CLKï¿½ï¿½ï¿½ï¿½ */
+    /* ³õÊ¼»¯CLKÒý½Å */
     gpio_init_struct.Pin    = ATK_MD0350_TOUCH_SPI_CLK_GPIO_PIN;
     gpio_init_struct.Mode   = GPIO_MODE_OUTPUT_PP;
     gpio_init_struct.Pull   = GPIO_PULLUP;
@@ -95,9 +95,9 @@ void atk_md0350_touch_spi_init(void)
 }
 
 /**
- * @brief       ATK-MD0350Ä£ï¿½é´¥ï¿½ï¿½SPIï¿½Ó¿Ú¶ï¿½ï¿½ï¿½ï¿½ï¿½
- * @param       ï¿½ï¿½
- * @retval      ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @brief       ATK-MD0350Ä£¿é´¥ÃþSPI½Ó¿Ú¶ÁÊý¾Ý
+ * @param       ÎÞ
+ * @retval      ¶Á³öµÄÊý¾Ý
  */
 uint16_t atk_md0350_touch_spi_read(uint8_t cmd)
 {
