@@ -107,12 +107,15 @@ int main(void)
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
   MX_SPI1_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   __HAL_UART_ENABLE_IT(&huart1,UART_IT_RXNE);
   HAL_UART_Receive_IT(&huart1,&s,1); 
   HW101_Init();
   SPI_PIN_Init();
   OLED_Init();
+   HAL_TIM_Base_Start_IT(&htim2);
+  HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
   /*test for*/
   tx_data[3]='A';  
   tx_data[2]=30;
@@ -127,6 +130,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+     __HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_1,999); /*设置PWM占空�???*/
     OLED_Refresh();
     uint8_t speed_[]="Speed:";
     OLED_ShowString(0,0,speed_, 16);
@@ -139,7 +143,7 @@ int main(void)
 
     printf("fangle:%f,%f,%f\n",fAngle[2], fAcc[2], fGyro[2]);
 
-    U_Transmit(tx_data);            /*发送数据到串口3*/
+    U_Transmit(tx_data);            /*发�?�数据到串口3*/
   }
   /* USER CODE END 3 */
 }
@@ -184,11 +188,11 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-int fputc(int ch, FILE *f)  //给串口三重定向
+int fputc(int ch, FILE *f)  //给串口三重定�????
 {
-    while ((USART3->SR & 0X40) == 0);     /* 等待上一个字符发送完成 */
+    while ((USART3->SR & 0X40) == 0);     /* 等待上一个字符发送完�???? */
 
-    USART3->DR = (uint8_t)ch;             /* 将要发送的字符 ch 写入到DR寄存器 */
+    USART3->DR = (uint8_t)ch;             /* 将要发�?�的字符 ch 写入到DR寄存�???? */
     return ch;
 }
 /* USER CODE END 4 */
