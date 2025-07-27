@@ -1,18 +1,18 @@
+资料:[K230 YOLO 大作战 — CanMV K230](https://www.kendryte.com/k230_canmv/zh/main/zh/example/ai/YOLO大作战.html)
+
+
+
 运行` python to_kmodel.py --target k230 --model ../../runs/train/exp12/weights/best.onnx --dataset ../test --input_width 640 --input_height 480 --ptq_option 0`时报错
 
 ```
 ImportError: DLL load failed while importing _nncase: 找不到指定的模块。
 ```
 
+
+
 解决：（文件放在同级目录下
 
 ![image-20250727010746280](.\assets\image-20250727010746280.png)
-
-
-
-
-
-
 
 继续报错:
 
@@ -44,13 +44,11 @@ Traceback (most recent call last):
 RuntimeError: Failed to initialize hostfxr: 0x80008096.
 ```
 
+
+
 说是还要下载`7.0`的`.net runtime`
 
 https://builds.dotnet.microsoft.com/dotnet/Runtime/7.0.20/dotnet-runtime-7.0.20-win-x64.exe
-
-
-
-
 
 继续报错：
 
@@ -65,6 +63,23 @@ to_kmodel.py:66: DeprecationWarning: BILINEAR is deprecated and will be removed 
   img_data = img_data.resize((shape[3], shape[2]), Image.BILINEAR)
 ```
 
+
+
 ` Nncase.Hosting.PluginLoader[0] NNCASE_PLUGIN_PATH is not set.`的问题可以通过手动添加环境变量解决，在编辑环境变量那里添加一个变量`NNCASE_PLUGIN_PATH`，值是对应`nncase`的地址
 
 但是最后一步遇到警告啥的其实不影响出结果，去`onnx`的同级目录看一下是不是已经生成了`kmodel`
+
+
+
+
+
+第一次环境配好之后只需要运行下面这些：(注意修改路径)
+
+```
+# 导出onnx，pt模型路径请自行选择
+python export.py --weight runs/train/exp/weights/best.pt --imgsz 640 --batch 1 --include onnx
+cd test_yolov5/detect
+# 转换kmodel,onnx模型路径请自定义，生成的kmodel在onnx模型同级目录下
+python to_kmodel.py --target k230 --model ../../runs/train/exp/weights/best.onnx --dataset ../test --input_width 640 --input_height 480 --ptq_option 0
+```
+
