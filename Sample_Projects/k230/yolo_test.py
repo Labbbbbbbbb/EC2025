@@ -12,7 +12,7 @@ if __name__=="__main__":
     display_size=[640,480]
 
     # 路径可以自行修改适配您自己的模型
-    kmodel_path="/data/best2.kmodel"
+    kmodel_path="/data/best3.kmodel"
     labels = ["redlaser"]
     confidence_threshold = 0.2
     nms_threshold=0.3
