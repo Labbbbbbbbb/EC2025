@@ -25,11 +25,11 @@
   "targets": {
     "Debug": {
       "excludeList": [
-        "User/SYSTEM/delay",
-        "User/SYSTEM/sys",
-        "User/SYSTEM/usart",
+        "User/BSP/LED",
+        "User/BSP/KEY",
         "User/BSP/lcd_uart",
-        "User/SYSTEM"
+        "User/SYSTEM",
+        "User/BSP"
       ],
       "toolchain": "GCC",
       "compileConfig": {

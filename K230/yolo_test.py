@@ -7,17 +7,16 @@ import image
 if __name__=="__main__":
     # 显示模式，默认"hdmi",可以选择"hdmi"和"lcd"
     display_mode="hdmi"
-    rgb888p_size=[1280,720]
-    if display_mode=="hdmi":
-        display_size=[1920,1080]
-    else:
-        display_size=[800,480]
+    rgb888p_size=[640,480]
+
+    display_size=[640,480]
+
     # 路径可以自行修改适配您自己的模型
-    kmodel_path="/data/yolo_kmodels/det_yolov5n_320.kmodel"
-    labels = ["apple","banana","orange"]
-    confidence_threshold = 0.8
-    nms_threshold=0.45
-    model_input_size=[320,320]
+    kmodel_path="/data/best.kmodel"
+    labels = ["redlaser"]
+    confidence_threshold = 0.2
+    nms_threshold=0.3
+    model_input_size=[640,480]
     # 初始化PipeLine
     pl=PipeLine(rgb888p_size=rgb888p_size,display_size=display_size,display_mode=display_mode)
     pl.create()

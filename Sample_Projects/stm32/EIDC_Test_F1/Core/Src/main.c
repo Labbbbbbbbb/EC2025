@@ -60,7 +60,18 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+ /*LCD*/
+  void show_mesg(void)
+{
+    /* 串口输出实验信息 */
+    printf("\n");
+    printf("********************************\r\n");
+    printf("STM32\r\n");
+    printf("ATK-MD0350\r\n");
+    printf("ATOM@ALIENTEK\r\n");
+    printf("********************************\r\n");
+    printf("\r\n");
+}
 /* USER CODE END 0 */
 
 /**
@@ -102,6 +113,8 @@ int main(void)
   HW101_Init();
   SPI_PIN_Init();
   OLED_Init();
+
+ 
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -120,6 +133,9 @@ int main(void)
     OLED_ShowChar(90,0,'.',16);
     OLED_ShowNum(100,0,(uint32_t)((2)*100),3,16);
     OLED_Refresh();
+
+    show_mesg();                        /*LCD 显示实验信息 */
+
     printf("fangle:%f,%f,%f\n",fAngle[2], fAcc[2], fGyro[2]);
   }
   /* USER CODE END 3 */
@@ -165,7 +181,13 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+int fputc(int ch, FILE *f)  //给串口三重定向
+{
+    while ((USART3->SR & 0X40) == 0);     /* 等待上一个字符发送完成 */
 
+    USART3->DR = (uint8_t)ch;             /* 将要发送的字符 ch 写入到DR寄存器 */
+    return ch;
+}
 /* USER CODE END 4 */
 
 /**
