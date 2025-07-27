@@ -28,7 +28,7 @@
 #include "HWT101CT_sdk.h"
 #include "io_retargetToUart.h"
 #include "oled.h"
-
+#include "my_uart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -113,8 +113,9 @@ int main(void)
   HW101_Init();
   SPI_PIN_Init();
   OLED_Init();
-
- 
+  /*test for*/
+  tx_data[3]='A';  
+  tx_data[2]=30;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -137,6 +138,8 @@ int main(void)
     show_mesg();                        /*LCD 显示实验信息 */
 
     printf("fangle:%f,%f,%f\n",fAngle[2], fAcc[2], fGyro[2]);
+
+    U_Transmit(tx_data);            /*发送数据到串口3*/
   }
   /* USER CODE END 3 */
 }
