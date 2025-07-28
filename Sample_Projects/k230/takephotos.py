@@ -34,8 +34,8 @@ def save_current_image(img, count):
 sensor_id = 2
 sensor = None
 
-picture_width = 400
-picture_height = 240
+picture_width = 640
+picture_height = 480
 
 
 # 显示模式选择：可以是 "VIRT"、"LCD" 或 "HDMI"
@@ -44,8 +44,8 @@ DISPLAY_MODE = "VIRT"
 # 根据模式设置显示宽高
 if DISPLAY_MODE == "VIRT":
     # 虚拟显示器模式
-    DISPLAY_WIDTH = 800
-    DISPLAY_HEIGHT = 480
+    DISPLAY_WIDTH = picture_width
+    DISPLAY_HEIGHT = picture_height
 elif DISPLAY_MODE == "LCD":
     # 3.1寸屏幕模式
     DISPLAY_WIDTH = 800

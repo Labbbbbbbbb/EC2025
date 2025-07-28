@@ -1,5 +1,4 @@
-#基础版，等待大镜头的效果
-
+#等待大的镜头
 import time, os, sys
 
 from media.sensor import *
@@ -10,14 +9,14 @@ import math
 sensor_id = 2
 sensor = None
 
-picture_width = 400
-picture_height = 240
+picture_width = 640
+picture_height = 480
 
 
 
 
 #--------定义自己的变量START--------
-threshold_red = [(0, 100, 127, 20, -15, 114)]
+threshold_red = [(93, 100, -29, 6, -60, 27)]
 
 #--------定义自己的变量END--------
 
@@ -47,8 +46,8 @@ DISPLAY_MODE = "VIRT"
 # 根据模式设置显示宽高
 if DISPLAY_MODE == "VIRT":
     # 虚拟显示器模式
-    DISPLAY_WIDTH = 800
-    DISPLAY_HEIGHT = 480
+    DISPLAY_WIDTH = picture_width*2
+    DISPLAY_HEIGHT = picture_height*2
 elif DISPLAY_MODE == "LCD":
     # 3.1寸屏幕模式
     DISPLAY_WIDTH = 800
