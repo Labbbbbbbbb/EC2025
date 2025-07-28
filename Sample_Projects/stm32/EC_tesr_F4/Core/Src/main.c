@@ -25,7 +25,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "HWT101CT_sdk.h"
+#include "io_retargetToUart.h"
+#include "oled.h"
+//#include "my_uart.h"  //用于向正点原子的串口发�?�数据，对应的接收程序在Display的MDK工程�?
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -93,8 +96,23 @@ int main(void)
   MX_TIM2_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
+  MX_USART6_UART_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  /*witmotion init  使用串口2*/
+  __HAL_UART_ENABLE_IT(&huart2, UART_IT_RXNE);
+  HAL_UART_Receive_IT(&huart2, &s, 1);
+  HW101_Init();
+  /*******/
+  /*oled init  使用SPI1*/
+  SPI_PIN_Init();
+  OLED_Init();
+  /*******/
+  /*蓝紫色激光pwm口初始化*/
+  HAL_TIM_Base_Start_IT(&htim2);
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 999); /*设置PWM占空�? �?光最大亮�?*/
+  /*****/
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -104,6 +122,23 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    /** witmotion update **/
+    HAL_Delay(1);
+    ProcessData();
+    printf("fangle:%f,%f,%f\n", fAngle[2], fAcc[2], fGyro[2]);
+    //HAL_UART_Transmit(&huart6, (uint8_t *)fAngle, sizeof(fAngle), 1000);
+    /***********/
+    /*OLED 显示实验信息*/
+    OLED_Refresh();
+    uint8_t speed_[] = "Speed:";
+    OLED_ShowString(0, 0, speed_, 16);
+    OLED_ShowNum(75, 0, (uint32_t)(250), 1, 16);
+    OLED_ShowChar(90, 0, '.', 16);
+    OLED_ShowNum(100, 0, (uint32_t)((2) * 100), 3, 16);
+    OLED_Refresh();
+
+    /*向正点原子开发板发�?�数�?*/
+    //U_Transmit(tx_data); 
   }
   /* USER CODE END 3 */
 }
