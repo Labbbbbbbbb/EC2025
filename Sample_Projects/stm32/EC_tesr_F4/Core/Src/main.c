@@ -28,7 +28,9 @@
 #include "HWT101CT_sdk.h"
 #include "io_retargetToUart.h"
 #include "oled.h"
-//#include "my_uart.h"  //用于向正点原子的串口发�?�数据，对应的接收程序在Display的MDK工程�?
+#include "User_SMS_STS.h"
+#include "SCServo.h"
+//#include "my_uart.h"  //用于向正点原子的串口发�?�数据，对应的接收程序在Display的MDK工程�??
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -111,7 +113,7 @@ int main(void)
   /*蓝紫色激光pwm口初始化*/
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 999); /*设置PWM占空�? �?光最大亮�?*/
+  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 999); /*设置PWM占空�?? �??光最大亮�??*/
   /*****/
   /* USER CODE END 2 */
 
@@ -137,8 +139,16 @@ int main(void)
     OLED_ShowNum(100, 0, (uint32_t)((2) * 100), 3, 16);
     OLED_Refresh();
 
-    /*向正点原子开发板发�?�数�?*/
+    /*向正点原子开发板发�?�数�??*/
     //U_Transmit(tx_data); 
+
+    /**Feetech**/
+    WritePosEx(1, 2200, 2400, 50);//pitch轴 增大向上
+    WritePosEx(2, 2220, 2400, 50);//yaw轴 增大往右
+    printf("%d,%d\n",ReadPos(1),ReadPos(2));
+    /******/
+
+
   }
   /* USER CODE END 3 */
 }

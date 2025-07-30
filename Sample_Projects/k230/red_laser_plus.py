@@ -16,15 +16,15 @@ picture_height = 480
 
 
 #--------定义自己的变量START--------
-threshold_red = [(45, 70, 10, 105, -78, -52)]
-
+threshold_laser = [(45, 70, 10, 105, -78, -52)]
+threshold_black = [(61, 100, -10, 8, -6, 127)]
 #--------定义自己的变量END--------
 
 #--------定义自己的函数START--------
-def red_blob(img, threshold_red,ROI=(0,0,picture_width,picture_height)):
+def laser_blob(img, threshold_laser,ROI=(0,0,picture_width,picture_height)):
 
     #识别红色激光光斑
-    blobs = img.find_blobs(threshold_red, roi=ROI, x_stride=2, y_stride=2, area_threshold=0, pixels_threshold=0,merge=True,margin=10)
+    blobs = img.find_blobs(threshold_laser, roi=ROI, x_stride=2, y_stride=2, area_threshold=0, pixels_threshold=0,merge=True,margin=10)
     if len(blobs)>=0.1 :#有色块
         # 选择像素最多的色块
         largest_blob = max(blobs, key=lambda b: b.pixels())
@@ -36,6 +36,20 @@ def red_blob(img, threshold_red,ROI=(0,0,picture_width,picture_height)):
 
         return cx, cy
     return 0, 0 #表示没有找到
+
+
+def black_rectangle(img):
+    img_gray = img.to_grayscale()
+    #img_gray.gaussian(1)
+    black_mask = img.binary([(61, 100, -10, 8, -6, 127)])  # LAB阈值（黑色范围）
+    result = img.bitwise_and(black_mask)
+        # 应用掩膜（例如：只保留黑色区域，其他置白）
+    #img.mask(black_mask)
+    img_bin = img_gray.binary([(0, 60)])
+    edges = img_gray.find_edges(image.EDGE_CANNY, threshold=(50, 80))
+    Display.show_image(black_mask,x=DISPLAY_WIDTH-picture_width,y=0,layer = Display.LAYER_OSD1)
+        # 如果有找到矩形
+
 
 #--------定义自己的函数END--------
 
@@ -102,12 +116,14 @@ try:
 
         # 图像处理放到这里
         #--------开始--------
-        x, y = red_blob(img, threshold_red)
+        x, y = laser_blob(img, threshold_laser)
         print(x,y)
+        black_rectangle(img)
+        #print
         #--------结束--------
 
         # 在屏幕左下角显示处理后的图像
-        Display.show_image(img,x=DISPLAY_WIDTH-picture_width,y=0,layer = Display.LAYER_OSD1)
+        #Display.show_image(img,x=DISPLAY_WIDTH-picture_width,y=0,layer = Display.LAYER_OSD1)
 
         # 打印帧率到控制台
         print(fps.fps())
