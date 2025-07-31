@@ -130,19 +130,23 @@ while cap.isOpened():
         score = 0
         
         # 矩形特征评分（主要）
-        if 1.2 <= candidate['aspect_ratio'] <= 2.0:  # 理想长宽比
+        if 1.2 <= candidate['aspect_ratio'] <= 1.7:  # 理想长宽比
             score += 30
-        elif 1.1 <= candidate['aspect_ratio'] <= 3.0:  # 可接受长宽比
+        elif 1.1 <= candidate['aspect_ratio'] <= 2.3:  # 可接受长宽比
             score += 20
+            
+        # 面积阈值判断
+        if candidate['area'] < 4000:  # 面积小于500像素的目标不予考虑
+            continue
             
         if candidate['solidity'] > 0.9:  # 高矩形度
             score += 25
         elif candidate['solidity'] > 0.85:  # 中等矩形度
             score += 15
             
-        if candidate['area'] > 2000:  # 面积加分
+        if candidate['area'] > 7000:  # 面积加分
             score += 20
-        elif candidate['area'] > 1000:
+        elif candidate['area'] > 5000:
             score += 10
             
         # 多层边框评分（辅助）
@@ -187,6 +191,12 @@ while cap.isOpened():
     # 按评分排序，取最佳目标
     valid_targets.sort(key=lambda x: x['score'], reverse=True)
     
+    # 打印得分最高的轮廓中心坐标
+    if valid_targets:
+        best_target = valid_targets[0]
+        center_x, center_y = best_target['center']
+        print(f"最高得分目标中心坐标: ({center_x:.1f}, {center_y:.1f}), 得分: {best_target['score']:.0f}")
+    
     # 绘制检测结果
     for i, target in enumerate(valid_targets[:3]):  # 最多显示3个最佳目标
         color = [(0, 255, 0), (255, 0, 0), (0, 0, 255)][i]  # 绿、红、蓝
@@ -199,7 +209,7 @@ while cap.isOpened():
         cv2.circle(frame, center, 8, color, -1)
         
         # 显示评分和信息
-        text = f"Score:{target['score']:.0f} AR:{target['aspect_ratio']:.2f}"
+        text = f"Score:{target['score']:.0f} AR:{target['aspect_ratio']:.2f} Area:{target['area']:.0f}"
         cv2.putText(frame, text, (center[0]-50, center[1]-25), 
                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
         
