@@ -3,6 +3,8 @@
     "files.associations": {
         "atk_md0350_font.h": "c",
         "stm32f1xx.h": "c",
-        "hwt101ct_sdk.h": "c"
+        "hwt101ct_sdk.h": "c",
+        "scservo.h": "c",
+        "user_sms_sts.h": "c"
     }
 }

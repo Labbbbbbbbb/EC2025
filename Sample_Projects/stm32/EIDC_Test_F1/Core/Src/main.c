@@ -25,10 +25,14 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "HWT101CT_sdk.h"
+//#include "HWT101CT_sdk.h"
 #include "io_retargetToUart.h"
 #include "oled.h"
 #include "my_uart.h"
+#include "wtr_calculate.h"
+//#include "User_SMS_STS.h"
+#include "SCServo.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -38,7 +42,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define PITCH 1
+#define YAW 2
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -60,18 +65,25 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
- /*LCD*/
-  void show_mesg(void)
-{
-    /* 串口输出实验信息 */
-    printf("\n");
-    printf("********************************\r\n");
-    printf("STM32\r\n");
-    printf("ATK-MD0350\r\n");
-    printf("ATOM@ALIENTEK\r\n");
-    printf("********************************\r\n");
-    printf("\r\n");
-}
+int16_t spex;
+int16_t spey;
+uint16_t initial_angle_yaw;
+uint16_t initial_angle_pitch;
+PID_t pid_x, pid_y;
+
+// void Rem_FT_Angle_EN(uint8_t yaw_or_pitch)
+// {
+//     static uint8_t flag = 0;
+//     if(flag==0)
+//     {
+//       initial_angle_yaw = ReadPos(YAW);
+//       initial_angle_pitch = ReadPos(PITCH);
+//       flag = 1;
+//     }
+
+// }
+
+
 /* USER CODE END 0 */
 
 /**
@@ -109,41 +121,80 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  __HAL_UART_ENABLE_IT(&huart1,UART_IT_RXNE);
-  HAL_UART_Receive_IT(&huart1,&s,1); 
-  HW101_Init();
+
   SPI_PIN_Init();
   OLED_Init();
-   HAL_TIM_Base_Start_IT(&htim2);
+  HAL_UART_Receive_IT(&huart2, rx_buffer, sizeof(rx_buffer));
+  HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
-  /*test for*/
-  tx_data[3]='A';  
-  tx_data[2]=30;
+  WheelMode(PITCH, 1); // 模弝0：佝置模�?? 模弝1：杒速； 模弝2：pwm调�?�；模弝3：步�??
+  WheelMode(YAW, 1); // 模弝0：佝置模�?? 模弝1：杒速； 模弝2：pwm调�?�；模弝3：步�??
+  WriteSpe(PITCH, 0, 0);//pitch
+  WriteSpe(YAW, 0, 0);//yaw
+  pid_init(&pid_x, 10, 0.0, 0.0);//yaw
+  pid_init(&pid_y, 10, 0.0, 0.0);//pitch
+
+  uint8_t no_find_flag = 0;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    HAL_Delay(1);
-    ProcessData();
-    /* USER CODE END WHILE */
+      
+      /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
-     __HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_1,999); /*设置PWM占空�???*/
-    OLED_Refresh();
-    uint8_t speed_[]="Speed:";
-    OLED_ShowString(0,0,speed_, 16);
-    OLED_ShowNum(75,0,(uint32_t)(250),1,16);
-    OLED_ShowChar(90,0,'.',16);
-    OLED_ShowNum(100,0,(uint32_t)((2)*100),3,16);
-    OLED_Refresh();
+      /* USER CODE BEGIN 3 */
+      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 999); /*设置PWM占空�?????*/
+      if (rx_data[0] == rx_data[1] && rx_data[1] == 0) {
+          // OLED_Refresh();
+          // uint8_t rxdat[4] = "rx:";
+          // OLED_ShowString(0,0,rxdat, 16);
+          // OLED_ShowNum(100,0,(uint16_t)(center_x),3,16);
+          // OLED_ShowNum(100,25,(uint16_t)(center_y),3,16);
+          // OLED_Refresh();
+          //  speedServo(320, rx_data[0], &pid_x);
+          //  speedServo(240, rx_data[1], &pid_y);
+          //  WriteSpe(YAW, (int16_t)pid_x.output, 100);
+          //  WriteSpe(PITCH, (int16_t)(-1 * pid_y.output), 50);
+          //  WriteSpe(YAW, -10 * (rx_data[0] - 320), 100);
+          //  WriteSpe(PITCH, 10 * (rx_data[1] - 240), 100);
+          // u_flag = 0; /* 清除接收标志 */
+          no_find_flag++;
+          if (no_find_flag > 10) {
 
-    show_mesg();                        /*LCD 显示实验信息 */
+              printf("no find target,pos:%d,%d\n", ReadPos(YAW), ReadPos(PITCH));
+              //WriteSpe(YAW, -500, 100);
+              WriteSpe(YAW, 0, 0);
 
-    printf("fangle:%f,%f,%f\n",fAngle[2], fAcc[2], fGyro[2]);
+              WheelMode(PITCH, 0);
+              WritePos(PITCH, 2250, 60, 50); // pitch
+          }
+    }else{
+        uint8_t Kpy = 2;
+        uint8_t Kpx = 2;
+        if ((-Kpx * (rx_data[0] - 320)) > 1000) spex = 1000;
+        else if ((-Kpx * (rx_data[0] - 320)) < -1000) spex = -1000;
+        else spex = -Kpx * (rx_data[0] - 320);
 
-    U_Transmit(tx_data);            /*发�?�数据到串口3*/
+        if((Kpy * (rx_data[1] - 240)) > 1000 ) spey = 1000;
+        else if ((Kpy * (rx_data[1] - 240)) < -1000 )spey = -1000;
+        else spey = Kpy * (rx_data[1] - 240);
+        WheelMode(YAW, 1);
+        WheelMode(PITCH, 1);
+        WriteSpe(YAW, spex, 100);
+        WriteSpe(PITCH, spey, 100);
+        printf("%d,%d,%d,%d\n", spex, spey, ReadPos(YAW), ReadPos(PITCH));
+
+        no_find_flag=0;
+    }
+   
+    //printf("%d\n", __HAL_UART_GET_FLAG(&huart2, UART_FLAG_ORE));
+    //printf("receive data: %d %d\n", rx_data[0], rx_data[1]);
+    //printf("%d,%d,%d,%d,%d,%d\n",rx_buffer[0],rx_buffer[1],rx_buffer[2],rx_buffer[3], rx_buffer[4], rx_buffer[5]);
+    // WriteSpe(1, -50, 50); // 正�?�向上，相机向上变大
+    // WriteSpe(2, 50, 50); // 正�?�向右，相机向右变小
   }
   /* USER CODE END 3 */
 }
@@ -188,13 +239,7 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-int fputc(int ch, FILE *f)  //给串口三重定�????
-{
-    while ((USART3->SR & 0X40) == 0);     /* 等待上一个字符发送完�???? */
 
-    USART3->DR = (uint8_t)ch;             /* 将要发�?�的字符 ch 写入到DR寄存�???? */
-    return ch;
-}
 /* USER CODE END 4 */
 
 /**

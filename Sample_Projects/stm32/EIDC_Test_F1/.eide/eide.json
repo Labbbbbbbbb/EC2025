@@ -29,7 +29,8 @@
         "User/BSP/KEY",
         "User/BSP/lcd_uart",
         "User/SYSTEM",
-        "User/BSP"
+        "User/BSP",
+        "User/HWT101"
       ],
       "toolchain": "GCC",
       "compileConfig": {
