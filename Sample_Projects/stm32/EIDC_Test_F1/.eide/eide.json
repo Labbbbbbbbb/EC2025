@@ -30,7 +30,8 @@
         "User/BSP/lcd_uart",
         "User/SYSTEM",
         "User/BSP",
-        "User/HWT101"
+        "User/HWT101",
+        "User/TimProcess"
       ],
       "toolchain": "GCC",
       "compileConfig": {

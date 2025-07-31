@@ -71,17 +71,7 @@ uint16_t initial_angle_yaw;
 uint16_t initial_angle_pitch;
 PID_t pid_x, pid_y;
 
-// void Rem_FT_Angle_EN(uint8_t yaw_or_pitch)
-// {
-//     static uint8_t flag = 0;
-//     if(flag==0)
-//     {
-//       initial_angle_yaw = ReadPos(YAW);
-//       initial_angle_pitch = ReadPos(PITCH);
-//       flag = 1;
-//     }
 
-// }
 
 
 /* USER CODE END 0 */
@@ -127,14 +117,20 @@ int main(void)
   HAL_UART_Receive_IT(&huart2, rx_buffer, sizeof(rx_buffer));
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
-  WheelMode(PITCH, 1); // 模弝0：佝置模�?? 模弝1：杒速； 模弝2：pwm调�?�；模弝3：步�??
-  WheelMode(YAW, 1); // 模弝0：佝置模�?? 模弝1：杒速； 模弝2：pwm调�?�；模弝3：步�??
+  WheelMode(PITCH, 1); // 模弝0：佝置模�??? 模弝1：杒速； 模弝2：pwm调�?�；模弝3：步�???
+  WheelMode(YAW, 1); // 模弝0：佝置模�??? 模弝1：杒速； 模弝2：pwm调�?�；模弝3：步�???
   WriteSpe(PITCH, 0, 0);//pitch
   WriteSpe(YAW, 0, 0);//yaw
-  pid_init(&pid_x, 10, 0.0, 0.0);//yaw
-  pid_init(&pid_y, 10, 0.0, 0.0);//pitch
+  pid_init(&pid_x, 1.5, 0.1, 0.3);//yaw - 增加响应速度
+  pid_init(&pid_y, 2, 0.0, 0.0);//pitch
 
-  uint8_t no_find_flag = 0;
+  uint8_t no_find_flag = 0;//标记目标丢失的时刻
+  uint8_t find_flag = 0;//标记目标是否被锁定（几乎到达中心）
+  uint8_t init_flag=0;//标记在目标未找到时是否处于初始化状态
+  
+  // 死区参数
+  uint8_t dead_zone_x = 8;  // X轴死区
+  uint8_t dead_zone_y = 6;  // Y轴死区
 
   /* USER CODE END 2 */
 
@@ -142,59 +138,133 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-      
+      // WriteSpe(1, -50, 50); // 正�?�向上，相机向上变大
+      // WriteSpe(2, 50, 50); // 正�?�向右，相机向右变小
       /* USER CODE END WHILE */
 
       /* USER CODE BEGIN 3 */
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 999); /*设置PWM占空�?????*/
-      if (rx_data[0] == rx_data[1] && rx_data[1] == 0) {
-          // OLED_Refresh();
-          // uint8_t rxdat[4] = "rx:";
-          // OLED_ShowString(0,0,rxdat, 16);
-          // OLED_ShowNum(100,0,(uint16_t)(center_x),3,16);
-          // OLED_ShowNum(100,25,(uint16_t)(center_y),3,16);
-          // OLED_Refresh();
-          //  speedServo(320, rx_data[0], &pid_x);
-          //  speedServo(240, rx_data[1], &pid_y);
-          //  WriteSpe(YAW, (int16_t)pid_x.output, 100);
-          //  WriteSpe(PITCH, (int16_t)(-1 * pid_y.output), 50);
-          //  WriteSpe(YAW, -10 * (rx_data[0] - 320), 100);
-          //  WriteSpe(PITCH, 10 * (rx_data[1] - 240), 100);
-          // u_flag = 0; /* 清除接收标志 */
-          no_find_flag++;
-          if (no_find_flag > 10) {
-
-              printf("no find target,pos:%d,%d\n", ReadPos(YAW), ReadPos(PITCH));
-              //WriteSpe(YAW, -500, 100);
-              WriteSpe(YAW, 0, 0);
-
-              WheelMode(PITCH, 0);
-              WritePos(PITCH, 2250, 60, 50); // pitch
+      // 如果已经锁定目标，检查是否需要重新追踪
+      if(find_flag == 1) {
+          int16_t error_x = rx_data[0] - 302;
+          int16_t error_y = rx_data[1] - 240;
+          
+          // 如果目标移出死区，重新开始追踪
+          if (abs(error_x) > dead_zone_x * 2 || abs(error_y) > dead_zone_y * 2) {
+              find_flag = 0;  // 重置锁定状态
+              printf("Target moved, resume tracking\n");
+          } else {
+              // 保持锁定状态，不执行追踪
+              printf("Target locked, maintaining position\n");
           }
-    }else{
-        uint8_t Kpy = 2;
-        uint8_t Kpx = 2;
-        if ((-Kpx * (rx_data[0] - 320)) > 1000) spex = 1000;
-        else if ((-Kpx * (rx_data[0] - 320)) < -1000) spex = -1000;
-        else spex = -Kpx * (rx_data[0] - 320);
+      }
+      
+      if(find_flag==0)//未锁定
+      {
+        if (rx_data[0] == rx_data[1] && rx_data[1] == 0) {//丢失目标
+            if(init_flag==0)
+            {
+              no_find_flag++;
+              if (no_find_flag > 20) {
 
-        if((Kpy * (rx_data[1] - 240)) > 1000 ) spey = 1000;
-        else if ((Kpy * (rx_data[1] - 240)) < -1000 )spey = -1000;
-        else spey = Kpy * (rx_data[1] - 240);
-        WheelMode(YAW, 1);
-        WheelMode(PITCH, 1);
-        WriteSpe(YAW, spex, 100);
-        WriteSpe(PITCH, spey, 100);
-        printf("%d,%d,%d,%d\n", spex, spey, ReadPos(YAW), ReadPos(PITCH));
+                printf("no find target,pos:%d,%d\n", ReadPos(YAW), ReadPos(PITCH));
+                WheelMode(YAW, 1);
+                WriteSpe(YAW, -100, 100);
+              // WriteSpe(YAW, 0, 0);
 
-        no_find_flag=0;
-    }
+                WheelMode(PITCH, 0);
+                WritePos(PITCH, 2250, 60, 50); // pitch
+                
+                }
+            }else{
+              //运动中丢失目标，使用卡尔曼滤波的估计坐标补上
+
+              }
+          }else{    //视野内有目标但尚未追上
+            // 旧的固定条件判断 - 可以删除或作为备用
+            // 计算速度控制
+            // 这里可以根据实际需要调整PID参数和速度计算逻辑
+            // 例如：
+        // uint8_t Kpy = 2;
+        // uint8_t Kpx = 2;
+        // if ((-Kpx * (rx_data[0] - 320)) > 1000) spex = 1000;
+        // else if ((-Kpx * (rx_data[0] - 320)) < -1000) spex = -1000;
+        // else spex = -Kpx * (rx_data[0] - 320);
+
+        // if((Kpy * (rx_data[1] - 240)) > 1000 ) spey = 1000;
+        // else if ((Kpy * (rx_data[1] - 240)) < -1000 )spey = -1000;
+        // else spey = Kpy * (rx_data[1] - 240);
+            WheelMode(YAW, 1);
+            WheelMode(PITCH, 1);
+            no_find_flag = 0;
+            init_flag    = 1; // 设置初始化标志，标志已经找到过，不再处于初始的寻找状态，此后就算丢失也认为是运动中的暂时丢失
+            // 计算误差
+            int16_t error_x = rx_data[0] - 302;
+            int16_t error_y = rx_data[1] - 240;
+            
+            // 死区控制 - 当误差足够小时停止运动
+            if (abs(error_x) <= dead_zone_x && abs(error_y) <= dead_zone_y) {
+                // 目标在死区内，停止运动并锁定位置
+                WheelMode(YAW, 0);
+                //WheelMode(PITCH, 0);
+                uint16_t pos_yaw = ReadPos(YAW);
+                //uint16_t pos_pitch = ReadPos(PITCH);
+                WritePos(YAW, pos_yaw, 60, 50);
+                //WritePos(PITCH, pos_pitch, 60, 50);
+                __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 100); /*降低PWM占空比*/
+                find_flag = 1;
+                printf("Target locked at center: error_x=%d, error_y=%d\n", error_x, error_y);
+            } else {
+                // 目标不在死区内，使用PID控制
+                speedServo(302, rx_data[0], &pid_x);
+                speedServo(240, rx_data[1], &pid_y);
+                WheelMode(YAW, 1);
+
+                // 限制输出速度，避免过冲
+                int16_t output_x = (int16_t)pid_x.output;
+                int16_t output_y = (int16_t)(-1 * pid_y.output);
+                
+                // 根据误差大小动态调整最大速度
+                int16_t max_speed_x = (abs(error_x) > 50) ? 100 : 60;  // 远距离快速，近距离慢速
+                int16_t max_speed_y = (abs(error_y) > 30) ? 50 : 30;
+                
+                // 速度限制
+                if (output_x > max_speed_x) output_x = max_speed_x;
+                if (output_x < -max_speed_x) output_x = -max_speed_x;
+                if (output_y > max_speed_y) output_y = max_speed_y;
+                if (output_y < -max_speed_y) output_y = -max_speed_y;
+                
+                WriteSpe(YAW, output_x, 100);
+                WriteSpe(PITCH, output_y, 50);
+                
+                printf("Tracking: error_x=%d, error_y=%d, output_x=%d, output_y=%d\n", 
+                       error_x, error_y, output_x, output_y);
+            }
+
+            // 旧的固定条件判断 - 可以删除或作为备用
+            if(abs(rx_data[0]-302)<5)
+            {
+              WheelMode(YAW, 0);
+              uint16_t pos = ReadPos(YAW);
+               WritePos(YAW, pos, 60, 50); // yaw
+               __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 100); /*设置PWM占空比*/
+               find_flag = rx_data[0];
+               
+               // HAL_Delay(10000);
+            }
+        }
+      }
+
+        // 每10次循环输出一次状态信息，避免过多打印影响性能
+        static uint8_t print_counter = 0;
+        if(++print_counter >= 10) {
+            printf("PID_out:%f, flag:%d, rx:[%f,%f]\n", 
+                   pid_x.output, find_flag, (float)rx_data[0], (float)rx_data[1]);
+            print_counter = 0;
+        }
+
    
-    //printf("%d\n", __HAL_UART_GET_FLAG(&huart2, UART_FLAG_ORE));
-    //printf("receive data: %d %d\n", rx_data[0], rx_data[1]);
-    //printf("%d,%d,%d,%d,%d,%d\n",rx_buffer[0],rx_buffer[1],rx_buffer[2],rx_buffer[3], rx_buffer[4], rx_buffer[5]);
-    // WriteSpe(1, -50, 50); // 正�?�向上，相机向上变大
-    // WriteSpe(2, 50, 50); // 正�?�向右，相机向右变小
+    
+  
   }
   /* USER CODE END 3 */
 }
