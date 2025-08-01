@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2025 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2025 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -25,12 +25,16 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "HWT101CT_sdk.h"
+// #include "HWT101CT_sdk.h"
 #include "io_retargetToUart.h"
-#include "oled.h"
-#include "User_SMS_STS.h"
+#include "HWT101CT_sdk.h"
+#include "my_uart.h"
+#include "wtr_calculate.h"
+
 #include "SCServo.h"
-//#include "my_uart.h"  //用于向正点原子的串口发�?�数据，对应的接收程序在Display的MDK工程�??
+
+#include "stdio.h"
+#include "stdlib.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,7 +44,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define PITCH 1
+#define YAW   2
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -62,7 +67,12 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+int16_t spex;
+int16_t spey;
+uint16_t initial_angle_yaw;
+uint16_t initial_angle_pitch;
+PID_t pid_x, pid_y;
+YawKalman yaw_filter;
 /* USER CODE END 0 */
 
 /**
@@ -100,56 +110,130 @@ int main(void)
   MX_USART2_UART_Init();
   MX_USART6_UART_Init();
   MX_USART3_UART_Init();
+  MX_UART4_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-  /*witmotion init  使用串口2*/
+
+    //SPI_PIN_Init();
+    //OLED_Init();
   __HAL_UART_ENABLE_IT(&huart2, UART_IT_RXNE);
   HAL_UART_Receive_IT(&huart2, &s, 1);
+  
   HW101_Init();
-  /*******/
-  /*oled init  使用SPI1*/
-  SPI_PIN_Init();
-  OLED_Init();
-  /*******/
-  /*蓝紫色激光pwm口初始化*/
+  HAL_UART_Receive_IT(&huart3, rx_buffer, sizeof(rx_buffer));
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 999); /*设置PWM占空�?? �??光最大亮�??*/
-  /*****/
+  WheelMode(PITCH, 1);             // 模弝0：佝置模�?????? 模弝1：杒速； 模弝2：pwm调�?�；模弝3：步�??????
+  WheelMode(YAW, 1);               // 模弝0：佝置模�?????? 模弝1：杒速； 模弝2：pwm调�?�；模弝3：步�??????
+  WriteSpe(PITCH, 0, 0);           // pitch
+  WriteSpe(YAW, 0, 0);             // yaw
+  pid_init(&pid_x, 5.0, 1.0, 0.3); // yaw - 增加响应速度
+  pid_init(&pid_y, 2, 0.0, 0.0);   // pitch
+  yaw_kalman_init(&yaw_filter, 135.0f, 0.1f, 10.0f); // 初始yaw, Q, R
+
+  uint8_t no_find_flag = 0; // 标记目标丢失的时�???
+  uint8_t find_flag    = 0; // 标记目标是否被锁定（几乎到达中心�???
+  uint8_t init_flag    = 0; // 标记在目标未找到时是否处于初始化状�??
+
+  // 死区参数
+  uint8_t dead_zone_x = 16; // X轴死�???
+  uint8_t dead_zone_y = 6;  // Y轴死�???
+                            // 添加数据滤波变量
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+  while (0) {
+      printf("%d,%d\n", rx_data[0], rx_data[1]);
+  }
+    while (1) {
+        // WriteSpe(1, -50, 50); // 正向上，相机向上变大
+        // WriteSpe(2, 50, 50); // 正向右，相机向右变小
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    /** witmotion update **/
-    HAL_Delay(1);
-    ProcessData();
-    printf("fangle:%f,%f,%f\n", fAngle[2], fAcc[2], fGyro[2]);
-    //HAL_UART_Transmit(&huart6, (uint8_t *)fAngle, sizeof(fAngle), 1000);
-    /***********/
-    /*OLED 显示实验信息*/
-    OLED_Refresh();
-    uint8_t speed_[] = "Speed:";
-    OLED_ShowString(0, 0, speed_, 16);
-    OLED_ShowNum(75, 0, (uint32_t)(250), 1, 16);
-    OLED_ShowChar(90, 0, '.', 16);
-    OLED_ShowNum(100, 0, (uint32_t)((2) * 100), 3, 16);
-    OLED_Refresh();
 
-    /*向正点原子开发板发�?�数�??*/
-    //U_Transmit(tx_data); 
+        /***WitMotion***/
+        HAL_Delay(1);
+        ProcessData();
+        printf("fangle:%f,%f,%f\n", fAngle[2], fAcc[2], fGyro[2]);
+        /***WitMotion***/
 
-    /**Feetech**/
-    WritePosEx(1, 2200, 2400, 50);//pitch轴 增大向上
-    WritePosEx(2, 2220, 2400, 50);//yaw轴 增大往右
-    printf("%d,%d\n",ReadPos(1),ReadPos(2));
-    /******/
+        if (find_flag == 0) // 未锁�???
+        {
+            if (rx_data[0] == rx_data[1] && rx_data[1] == 0) { // 丢失目标
+                if (init_flag == 0) {
+                    no_find_flag++;
+                    if (no_find_flag > 20) {
+
+                        
+                        WheelMode(YAW, 1);
+                        WriteSpe(YAW, -300, 100);
+                        
+
+                        WheelMode(PITCH, 0);
+                        WritePos(PITCH, 2250, 60, 50); // pitch
+                    }
+                } else {
+                    // 运动中丢失目标，使用卡尔曼滤波的估计坐标补上
+                    
+                }
+            } else { // 视野内有目标但尚未追�???
+
+                WheelMode(YAW, 1);
+                WheelMode(PITCH, 1);
+                no_find_flag = 0;
+                //init_flag    = 1; // 设置初始化标志，标志已经找到过，不再处于初始的寻找状态，此后就算丢失也认为是运动中的暂时丢失
+                // 计算误差
+                int16_t error_x = rx_data[0] - 302;
+                int16_t error_y = rx_data[1] - 240;
+
+                // 死区控制 - 当误差足够小时停止运�???
+                //if (abs(error_x) <= dead_zone_x && abs(error_y) <= dead_zone_y) {
+                if (abs(error_x) <= dead_zone_x ) {
+
+                    // 目标在死区内，停止运动并锁定位置
+                    WheelMode(YAW, 0);
+                    // WheelMode(PITCH, 0);
+                    uint16_t pos_yaw = ReadPos(YAW);
+                    // uint16_t pos_pitch = ReadPos(PITCH);
+                    WritePos(YAW, pos_yaw, 60, 50);
+                    // WritePos(PITCH, pos_pitch, 60, 50);
+                    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 100); /*降低PWM占空�???*/
+                    find_flag = 1;
+                    // printf("Target locked at center: error_x=%d, error_y=%d\n", error_x, error_y);
+                } else {
+                    // 目标不在死区内，使用PID控制
+                    speedServo(302, rx_data[0], &pid_x);
+                    speedServo(240, rx_data[1], &pid_y);
+                    WheelMode(YAW, 1);
+
+                    // 限制输出速度，避免过�???
+                    int16_t output_x = (int16_t)pid_x.output;
+                    int16_t output_y = (int16_t)(-1 * pid_y.output);
+
+                    // 根据误差大小动�?�调整最大�?�度
+                    int16_t max_speed_x = (abs(error_x) > 50) ? 100 : 60; // 远距离快速，近距离慢�???
+                    int16_t max_speed_y = (abs(error_y) > 30) ? 50 : 30;
+
+                    // 速度限制
+                    if (output_x > max_speed_x) output_x = max_speed_x;
+                    if (output_x < -max_speed_x) output_x = -max_speed_x;
+                    if (output_y > max_speed_y) output_y = max_speed_y;
+                    if (output_y < -max_speed_y) output_y = -max_speed_y;
+
+                    WriteSpe(YAW, output_x, 100);
+                    WriteSpe(PITCH, output_y, 50);
+                }
+            }
+        }
 
 
-  }
+
+        // printf("%f,%d,%d,%d\n",
+        //        pid_x.output, find_flag, rx_data[0], rx_data[1]);
+    }
   /* USER CODE END 3 */
 }
 
@@ -210,11 +294,10 @@ void SystemClock_Config(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+    /* User can add his own implementation to report the HAL error return state */
+    __disable_irq();
+    while (1) {
+    }
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -229,8 +312,8 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+    /* User can add his own implementation to report the file name and line number,
+       ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

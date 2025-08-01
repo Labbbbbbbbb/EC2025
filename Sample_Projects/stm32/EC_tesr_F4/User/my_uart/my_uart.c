@@ -1,5 +1,6 @@
 #include "my_uart.h"
 #include "io_retargetToUart.h"
+#include "HWT101CT_sdk.h"
 #define TX_UART USART3
 #define TX_UART_HANDLE huart3
 uint16_t tx_data[4]={0};
@@ -39,8 +40,15 @@ void U_Receive(uint8_t *buffer)
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
+    static uint8_t ucTemp = 0;
+    // HAL_UART_Transmit(&huart8,&ucTemp,1,0xf);
 
     if (huart->Instance == USART2) {
+        WitSerialDataIn(ucTemp);
+        HAL_UART_Receive_IT(huart, &ucTemp, 1);
+        // HAL_UART_Transmit(&huart8,&ucTemp,1,0xf);
+    }
+    if (huart->Instance == USART3) {
         static uint8_t rxstate = 0;
         if (rxstate == 0) {
             //u_flag = 0;
@@ -82,8 +90,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
                 rxstate = 0;
             }
         }
-        HAL_UART_Transmit(&huart3, rx_buffer, sizeof(rx_buffer), 100); /* 回传数据 */
-        HAL_UART_Receive_IT(&huart2, (uint8_t *)rx_buffer, 1);
+        //HAL_UART_Transmit(&huart3, rx_buffer, sizeof(rx_buffer), 100); /* 回传数据 */
+        HAL_UART_Receive_IT(&huart3, (uint8_t *)rx_buffer, 1);
     }
     
 

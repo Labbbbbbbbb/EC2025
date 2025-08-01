@@ -227,7 +227,7 @@ void UsartInit(UART_HandleTypeDef huart,USART_TypeDef* USART,unsigned int uiBaud
         Error_Handler();
     }
 }
-/**/
+/**
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 
@@ -241,4 +241,4 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		// HAL_UART_Transmit(&huart8,&ucTemp,1,0xf);
     }
 
-}/**/
+}**/

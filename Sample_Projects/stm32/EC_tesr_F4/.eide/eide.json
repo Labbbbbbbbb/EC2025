@@ -25,7 +25,7 @@
   "targets": {
     "Debug": {
       "excludeList": [
-        "User/my_uart"
+        "User/oled"
       ],
       "toolchain": "GCC",
       "compileConfig": {
