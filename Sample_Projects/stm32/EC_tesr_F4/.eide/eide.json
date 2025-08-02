@@ -25,7 +25,8 @@
   "targets": {
     "Debug": {
       "excludeList": [
-        "User/oled"
+        "User/oled",
+        "User/HWT101/HWT_user.c"
       ],
       "toolchain": "GCC",
       "compileConfig": {

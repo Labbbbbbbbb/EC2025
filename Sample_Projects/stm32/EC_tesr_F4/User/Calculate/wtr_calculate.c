@@ -90,5 +90,5 @@ void pid_init(PID_t *pid,float kp,float ki,float kd)
     pid->KP = kp;
     pid->KI = ki;
     pid->KD = kd;
-    pid->outputMax = 1000;
+    pid->outputMax = 300;
 }

@@ -43,6 +43,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     if (huart->Instance == USART2) {
         static uint8_t rxstate = 0;
         if (rxstate == 0) {
+            //u_flag = 0;
             if (rx_buffer[0] == 0xAA) /* ½ÓÊÕÎ´Íê³É */
             {
                 rxstate++;
@@ -81,7 +82,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
                 rxstate = 0;
             }
         }
-        //HAL_UART_Transmit(&huart3, rx_buffer, sizeof(rx_buffer), 100); /* 回传数据 */
+        HAL_UART_Transmit(&huart3, rx_buffer, sizeof(rx_buffer), 100); /* 回传数据 */
         HAL_UART_Receive_IT(&huart2, (uint8_t *)rx_buffer, 1);
     }
     

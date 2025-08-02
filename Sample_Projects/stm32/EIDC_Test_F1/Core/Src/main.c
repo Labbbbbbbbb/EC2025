@@ -151,10 +151,10 @@ int main(void)
           // 如果目标移出死区，重新开始追踪
           if (abs(error_x) > dead_zone_x * 2 || abs(error_y) > dead_zone_y * 2) {
               find_flag = 0;  // 重置锁定状态
-              printf("Target moved, resume tracking\n");
+              //printf("Target moved, resume tracking\n");
           } else {
               // 保持锁定状态，不执行追踪
-              printf("Target locked, maintaining position\n");
+              //printf("Target locked, maintaining position\n");
           }
       }
       
@@ -166,7 +166,7 @@ int main(void)
               no_find_flag++;
               if (no_find_flag > 20) {
 
-                printf("no find target,pos:%d,%d\n", ReadPos(YAW), ReadPos(PITCH));
+                printf("no ");
                 WheelMode(YAW, 1);
                 WriteSpe(YAW, -100, 100);
               // WriteSpe(YAW, 0, 0);
@@ -180,19 +180,7 @@ int main(void)
 
               }
           }else{    //视野内有目标但尚未追上
-            // 旧的固定条件判断 - 可以删除或作为备用
-            // 计算速度控制
-            // 这里可以根据实际需要调整PID参数和速度计算逻辑
-            // 例如：
-        // uint8_t Kpy = 2;
-        // uint8_t Kpx = 2;
-        // if ((-Kpx * (rx_data[0] - 320)) > 1000) spex = 1000;
-        // else if ((-Kpx * (rx_data[0] - 320)) < -1000) spex = -1000;
-        // else spex = -Kpx * (rx_data[0] - 320);
-
-        // if((Kpy * (rx_data[1] - 240)) > 1000 ) spey = 1000;
-        // else if ((Kpy * (rx_data[1] - 240)) < -1000 )spey = -1000;
-        // else spey = Kpy * (rx_data[1] - 240);
+   
             WheelMode(YAW, 1);
             WheelMode(PITCH, 1);
             no_find_flag = 0;
@@ -212,7 +200,7 @@ int main(void)
                 //WritePos(PITCH, pos_pitch, 60, 50);
                 __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 100); /*降低PWM占空比*/
                 find_flag = 1;
-                printf("Target locked at center: error_x=%d, error_y=%d\n", error_x, error_y);
+                //printf("Target locked at center: error_x=%d, error_y=%d\n", error_x, error_y);
             } else {
                 // 目标不在死区内，使用PID控制
                 speedServo(302, rx_data[0], &pid_x);
@@ -236,31 +224,21 @@ int main(void)
                 WriteSpe(YAW, output_x, 100);
                 WriteSpe(PITCH, output_y, 50);
                 
-                printf("Tracking: error_x=%d, error_y=%d, output_x=%d, output_y=%d\n", 
-                       error_x, error_y, output_x, output_y);
+                //printf("Tracking: error_x=%d, error_y=%d, output_x=%d, output_y=%d\n", 
+                       //error_x, error_y, output_x, output_y);
             }
 
-            // 旧的固定条件判断 - 可以删除或作为备用
-            if(abs(rx_data[0]-302)<5)
-            {
-              WheelMode(YAW, 0);
-              uint16_t pos = ReadPos(YAW);
-               WritePos(YAW, pos, 60, 50); // yaw
-               __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 100); /*设置PWM占空比*/
-               find_flag = rx_data[0];
-               
-               // HAL_Delay(10000);
-            }
+           
         }
       }
 
         // 每10次循环输出一次状态信息，避免过多打印影响性能
-        static uint8_t print_counter = 0;
-        if(++print_counter >= 10) {
-            printf("PID_out:%f, flag:%d, rx:[%f,%f]\n", 
+        
+        
+        printf("%f,%d, %f,%f\n", 
                    pid_x.output, find_flag, (float)rx_data[0], (float)rx_data[1]);
-            print_counter = 0;
-        }
+    
+        
 
    
     

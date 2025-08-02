@@ -79,6 +79,15 @@ void Error_Handler(void);
 #define FeeTech_Tx_GPIO_Port GPIOA
 #define FeeTech_Rx_Pin GPIO_PIN_10
 #define FeeTech_Rx_GPIO_Port GPIOA
+#define MODE1_Pin GPIO_PIN_7
+#define MODE1_GPIO_Port GPIOB
+#define MODE1_EXTI_IRQn EXTI9_5_IRQn
+#define MODE2_Pin GPIO_PIN_9
+#define MODE2_GPIO_Port GPIOB
+#define MODE2_EXTI_IRQn EXTI9_5_IRQn
+#define MODE3_Pin GPIO_PIN_1
+#define MODE3_GPIO_Port GPIOE
+#define MODE3_EXTI_IRQn EXTI1_IRQn
 
 /* USER CODE BEGIN Private defines */
 
