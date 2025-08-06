@@ -6,17 +6,17 @@ import image
 
 if __name__=="__main__":
     # 显示模式，默认"hdmi",可以选择"hdmi"和"lcd"
-    display_mode="hdmi"
-    rgb888p_size=[640,480]
+    display_mode="lcd"
+    rgb888p_size=[640,640]
 
     display_size=[640,480]
 
     # 路径可以自行修改适配您自己的模型
-    kmodel_path="/data/best3.kmodel"
+    kmodel_path="/data/best16.kmodel"
     labels = ["redlaser"]
-    confidence_threshold = 0.2
+    confidence_threshold = 0.3
     nms_threshold=0.3
-    model_input_size=[640,480]
+    model_input_size=[640,640]
     # 初始化PipeLine
     pl=PipeLine(rgb888p_size=rgb888p_size,display_size=display_size,display_mode=display_mode)
     pl.create()
@@ -33,6 +33,7 @@ if __name__=="__main__":
                 yolo.draw_result(res,pl.osd_img)
                 pl.show_image()
                 gc.collect()
+                print(res)
     except Exception as e:
         sys.print_exception(e)
     finally:

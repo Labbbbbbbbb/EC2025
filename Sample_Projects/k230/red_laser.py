@@ -6,6 +6,8 @@ from media.display import *
 from media.media import *
 import math
 
+from machine import UART,Pin,FPIOA
+
 sensor_id = 2
 sensor = None
 
@@ -16,8 +18,12 @@ picture_height = 480
 
 
 #--------定义自己的变量START--------
-threshold_red = [(93, 100, -29, 6, -60, 27)]
-
+threshold_red = [(62, 100, 9, 127, -2, 50)]
+fpioa = FPIOA()
+fpioa.set_function(48, FPIOA.UART4_TXD)
+fpioa.set_function(49, FPIOA.UART4_RXD)
+uart = UART(4, baudrate=115200, bits=UART.EIGHTBITS, parity=UART.PARITY_NONE, stop=UART.STOPBITS_ONE)
+uart.init(baudrate=115200, bits=UART.EIGHTBITS, parity=UART.PARITY_NONE, stop=UART.STOPBITS_ONE)
 #--------定义自己的变量END--------
 
 #--------定义自己的函数START--------
@@ -109,6 +115,19 @@ try:
         # 在屏幕左下角显示处理后的图像
         Display.show_image(img,x=DISPLAY_WIDTH-picture_width,y=0,layer = Display.LAYER_OSD1)
 
+
+
+        #串口数据发送
+        xh=x>>8
+        xl=x-xh*256
+        yh=y>>8
+        yl=y-yh*256
+        position = bytearray([
+                       0xAA, 0xFF,
+                       xh,xl, yh,yl,                         # 红光坐标
+                       0xFF, 0xAA
+                   ])
+        uart.write(position)
         # 打印帧率到控制台
         print(fps.fps())
 
